@@ -30,7 +30,7 @@ class YeddaFrame(Frame):
         self.fileName = ""
         self.debug = False
         self.colorAllChunk = True
-        self.recommendFlag = True
+        self.recommendFlag = False
         self.history = deque(maxlen=20)
         self.currentContent = deque(maxlen=1)
         self.pressCommand = {'a': "Artifical",
@@ -107,11 +107,11 @@ class YeddaFrame(Frame):
         open_btn = Button(self, text="Open", command=self.onOpen)
         open_btn.grid(row=1, column=self.textColumn + 1)
 
-        recommend_on_button = Button(self, text="RMOn", command=self.setInRecommendModel)
-        recommend_on_button.grid(row=2, column=self.textColumn + 1)
-
-        recommend_off_button = Button(self, text="RMOff", command=self.setInNotRecommendModel)
-        recommend_off_button.grid(row=3, column=self.textColumn + 1)
+        # recommend_on_button = Button(self, text="RMOn", command=self.setInRecommendModel)
+        # recommend_on_button.grid(row=2, column=self.textColumn + 1)
+        #
+        # recommend_off_button = Button(self, text="RMOff", command=self.setInNotRecommendModel)
+        # recommend_off_button.grid(row=3, column=self.textColumn + 1)
 
         remap_button = Button(self, text="ReMap", command=self.renewPressCommand)
         remap_button.grid(row=4, column=self.textColumn + 1, pady=4)
