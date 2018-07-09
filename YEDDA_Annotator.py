@@ -62,7 +62,7 @@ class YeddaFrame(Frame):
         set this flag as true
         If your data is Chinese without segmentation, you need to set this flag as False
         '''
-        self.segmented = False  # False for non-segmentated Chinese, True for English or Segmented Chinese
+        self.segmented = True  # False for non-segmentated Chinese, True for English or Segmented Chinese
         self.configFile = "config"
         self.entityRe = r'\[\@.*?\#.*?\*\](?!\#)'
         self.insideNestEntityRe = r'\[\@\[\@(?!\[\@).*?\#.*?\*\]\#'
