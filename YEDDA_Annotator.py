@@ -76,6 +76,7 @@ class YeddaFrame(Frame):
         self.recommendColor = 'lightgreen'
         self.selectColor = 'light salmon'
         self.textFontStyle = "Times"
+        self.fontWeight = "normal"
         self.initUI()
 
     # noinspection PyAttributeOutsideInit
@@ -122,16 +123,16 @@ class YeddaFrame(Frame):
         quit_button = Button(self, text="Quit", command=self.quit)
         quit_button.grid(row=6, column=self.textColumn + 1, pady=4)
 
-        self.cursorName = Label(self, text="Cursor: ", foreground="Blue", font=(self.textFontStyle, 14, "bold"))
+        self.cursorName = Label(self, text="Cursor: ", foreground="Blue", font=(self.textFontStyle, 14, self.fontWeight))
         self.cursorName.grid(row=9, column=self.textColumn + 1, pady=4)
         self.cursorIndex = Label(self, text=("row: %s\ncol: %s" % (0, 0)), foreground="red",
-                                 font=(self.textFontStyle, 14, "bold"))
+                                 font=(self.textFontStyle, 14, self.fontWeight))
         self.cursorIndex.grid(row=10, column=self.textColumn + 1, pady=4)
 
-        self.RecommendModelName = Label(self, text="RModel: ", foreground="Blue", font=(self.textFontStyle, 14, "bold"))
+        self.RecommendModelName = Label(self, text="RModel: ", foreground="Blue", font=(self.textFontStyle, 14, self.fontWeight))
         self.RecommendModelName.grid(row=12, column=self.textColumn + 1, pady=4)
         self.RecommendModelFlag = Label(self, text=str(self.recommendFlag), foreground="red",
-                                        font=(self.textFontStyle, 14, "bold"))
+                                        font=(self.textFontStyle, 14, self.fontWeight))
         self.RecommendModelFlag.grid(row=13, column=self.textColumn + 1, pady=4)
 
         # recommend_value = StringVar()
@@ -165,7 +166,7 @@ class YeddaFrame(Frame):
                 self.text.bind(altPlusKey, self.keepCurrent)
 
         self.text.bind('<Control-Key-z>', self.backToHistory)
-        # disable the default  copy behaivour when right click. 
+        # disable the default  copy behaviour when right click.
         # For MacOS, right click is button 2, other systems are button3
         self.text.bind('<Button-2>', self.rightClick)
         self.text.bind('<Button-3>', self.rightClick)
@@ -250,7 +251,7 @@ class YeddaFrame(Frame):
     def setFont(self, value):
         _family = self.textFontStyle
         _size = value
-        _weight = "bold"
+        _weight = self.fontWeight
         _underline = 0
         fnt = tkFont.Font(family=_family, size=_size, weight=_weight, underline=_underline)
         Text(self, font=fnt)
@@ -662,18 +663,18 @@ class YeddaFrame(Frame):
         hight = len(self.pressCommand)
         width = 2
         row = 0
-        mapLabel = Label(self, text="Shortcuts map Labels", foreground="blue", font=(self.textFontStyle, 14, "bold"))
+        mapLabel = Label(self, text="Shortcuts map Labels", foreground="blue", font=(self.textFontStyle, 14, self.fontWeight))
         mapLabel.grid(row=0, column=self.textColumn + 2, columnspan=2, rowspan=1, padx=10)
         self.labelEntryList = []
         self.shortcutLabelList = []
         for key in sorted(self.pressCommand):
             row += 1
             # print "key: ", key, "  command: ", self.pressCommand[key]
-            symbolLabel = Label(self, text=key.upper() + ": ", foreground="blue", font=(self.textFontStyle, 14, "bold"))
+            symbolLabel = Label(self, text=key.upper() + ": ", foreground="blue", font=(self.textFontStyle, 14, self.fontWeight))
             symbolLabel.grid(row=row, column=self.textColumn + 2, columnspan=1, rowspan=1, padx=3)
             self.shortcutLabelList.append(symbolLabel)
 
-            labelEntry = Entry(self, foreground="blue", font=(self.textFontStyle, 14, "bold"))
+            labelEntry = Entry(self, foreground="blue", font=(self.textFontStyle, 14, self.fontWeight))
             labelEntry.insert(0, self.pressCommand[key])
             labelEntry.grid(row=row, column=self.textColumn + 3, columnspan=1, rowspan=1)
             self.labelEntryList.append(labelEntry)
