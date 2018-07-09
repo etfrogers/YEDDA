@@ -394,11 +394,11 @@ class YeddaFrame(Frame):
             self.text.mark_set(INSERT, newcursor_index)
             self.text.see(newcursor_index)
             self.setCursorLabel(newcursor_index)
-            self.setColorDisplay()
+            self.apply_tag_colors()
 
-    def setColorDisplay(self):
+    def apply_tag_colors(self):
         if self.debug:
-            print "Action Track: setColorDisplay"
+            print "Action Track: apply_tag_colors"
         self.text.config(insertbackground='red', insertwidth=4, font=self.fnt)
 
         countVar = StringVar()
