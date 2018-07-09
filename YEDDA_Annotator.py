@@ -322,8 +322,7 @@ class YeddaFrame(Frame):
                 entity_content = selected_string
             else:
                 if len(selected_string) > 0:
-                    entity_content, cursor_index = self.replaceString(selected_string, selected_string,
-                                                                      command, cursor_index)
+                    entity_content, cursor_index = self.add_tag_around_string(selected_string, command, cursor_index)
             aboveHalf_content += entity_content
             content = self.addRecommendContent(aboveHalf_content, afterEntity_content, self.recommendFlag)
             content = content.encode('utf-8')
@@ -368,13 +367,11 @@ class YeddaFrame(Frame):
                 elif command == 'y':
                     print "y: comfirm recommend label"
                     old_key = self.pressCommand.keys()[self.pressCommand.values().index(old_entity_type)]
-                    entity_content, cursor_index = self.replaceString(selected_string, selected_string, old_key,
-                                                                      cursor_index)
+                    entity_content, cursor_index = self.add_tag_around_string(selected_string, old_key, cursor_index)
                 else:
                     if len(selected_string) > 0:
                         if command in self.pressCommand:
-                            entity_content, cursor_index = self.replaceString(selected_string, selected_string, command,
-                                                                              cursor_index)
+                            entity_content, cursor_index = self.add_tag_around_string(selected_string, command, cursor_index)
                         else:
                             return
                 line_before_entity += entity_content
@@ -408,7 +405,7 @@ class YeddaFrame(Frame):
         content = aboveHalf_content + followHalf_content
         self.writeFile(self.fileName, content, last_insert)
 
-    def replaceString(self, content, string, replaceType, cursor_index):
+    def add_tag_around_string(self, content, replaceType, cursor_index):
         if replaceType in self.pressCommand:
             new_string = "[@" + string + "#" + self.pressCommand[replaceType] + "*]"
             newcursor_index = cursor_index.split('.')[0] + "." + str(
@@ -417,8 +414,7 @@ class YeddaFrame(Frame):
             print "Invalid command!"
             print "cursor index: ", self.text.index(INSERT)
             return content, cursor_index
-        content = content.replace(string, new_string, 1)
-        return content, newcursor_index
+        return new_content, newcursor_index
 
     def writeFile(self, fileName, content, newcursor_index):
         if self.debug:
