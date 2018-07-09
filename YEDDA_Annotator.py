@@ -292,25 +292,21 @@ class YeddaFrame(Frame):
             belowLine_content = self.text.get(str(int(line_id) + 1) + '.0', "end-1c")
             line = self.text.get(line_id + '.0', line_id + '.end')
             matched_span = (-1, -1)
-            detected_entity = -1  # detected entity type:－1 not detected, 1 detected manual tag
+            line_before_entity = line
+            line_after_entity = ""
             for match in self.entity_regex.finditer(line):
                 if match.span()[0] <= int(column_id) & int(column_id) <= match.span()[1]:
                     matched_span = match.span()
-                    detected_entity = 1
+                    matched_groups = match.groups()
                     break
-            line_before_entity = line
-            line_after_entity = ""
             if matched_span[1] > 0:
-                selected_string = line[matched_span[0]:matched_span[1]]
-                if detected_entity == 1:
-                    new_string_list = selected_string.strip('[@*]').rsplit('#', 1)
-                new_string = new_string_list[0]
-                old_entity_type = new_string_list[1]
+                new_string = matched_groups[1]
+                old_entity_type = matched_groups[0]
                 line_before_entity = line[:matched_span[0]]
                 line_after_entity = line[matched_span[1]:]
                 selected_string = new_string
                 entity_content = selected_string
-                cursor_index = line_id + '.' + str(int(matched_span[1]) - (len(new_string_list[1]) + 4))
+                cursor_index = line_id + '.' + str(int(matched_span[1]) - (len(old_entity_type)*2 + 5))
                 if command == "q":
                     print 'q: remove entity label'
                 elif command == 'y':
