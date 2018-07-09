@@ -64,7 +64,7 @@ class YeddaFrame(Frame):
         '''
         self.segmented = True  # False for non-segmentated Chinese, True for English or Segmented Chinese
         self.configFile = "config.pkl"
-        self.entity_regex = re.compile(r'\[@.*?#.*?\*\](?!#)')
+        self.entity_regex = re.compile(r'<([\w-]+?)>.*?</\1>')
         self.inside_nest_entity_regex = re.compile(r'\[@\[@(?!\[@).*?#.*?\*\]#')
         # configure color
         self.entityColor = "SkyBlue1"
@@ -376,7 +376,8 @@ class YeddaFrame(Frame):
 
     def add_tag_around_string(self, content, replaceType, cursor_index):
         if replaceType in self.pressCommand:
-            new_string = "[@" + string + "#" + self.pressCommand[replaceType] + "*]"
+            new_content = "<" + self.pressCommand[replaceType] + ">" + content + \
+                          "</" + self.pressCommand[replaceType] + ">"
             newcursor_index = cursor_index.split('.')[0] + "." + str(
                 int(cursor_index.split('.')[1]) + len(self.pressCommand[replaceType]) + 5)
         else:
