@@ -109,7 +109,7 @@ class YeddaFrame(Frame):
         quit_button = Button(self, text="Quit", command=self.quit)
         quit_button.grid(row=6, column=self.textColumn + 1, pady=4)
 
-        self.cursorName = Label(self, text="Cursor: ", foreground="Blue", font=(self.textFontStyle, 14, self.fontWeight))
+        self.cursorName = Label(self, text="Cursor: ", foreground="black", font=(self.textFontStyle, 14, self.fontWeight))
         self.cursorName.grid(row=9, column=self.textColumn + 1, pady=4)
         self.cursorIndex = Label(self, text=("row: %s\ncol: %s" % (0, 0)), foreground="red",
                                  font=(self.textFontStyle, 14, self.fontWeight))
