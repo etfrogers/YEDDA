@@ -354,6 +354,7 @@ class YeddaFrame(Frame):
 
             if command == "q":
                 print 'q: remove entity label'
+                entity_content = selected_string
             else:
                 if len(selected_string) > 0:
                     entity_content, cursor_index = self.replaceString(selected_string, selected_string,
