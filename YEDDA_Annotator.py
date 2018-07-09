@@ -144,13 +144,6 @@ class YeddaFrame(Frame):
         # # b.grid(row =1 , column = 3)
         # b.pack(side='left')
 
-        lbl_entry = Label(self, text="Command:")
-        lbl_entry.grid(row=self.textRow + 1, sticky=E + W + S + N, pady=4, padx=4)
-        self.entry = Entry(self)
-        self.entry.grid(row=self.textRow + 1, columnspan=self.textColumn + 1, rowspan=1, sticky=E + W + S + N, pady=4,
-                        padx=80)
-        self.entry.bind('<Return>', self.returnEnter)
-
         # for press_key in self.pressCommand.keys():
         for idx in range(0, len(self.allKey)):
             press_key = self.allKey[idx]
@@ -175,9 +168,6 @@ class YeddaFrame(Frame):
         self.text.bind('<ButtonRelease-1>', self.singleLeftClick)
 
         self.setMapShow()
-
-        self.enter = Button(self, text="Enter", command=self.returnButton)
-        self.enter.grid(row=self.textRow + 1, column=self.textColumn + 1)
 
         # cursor index show with the left click
 
@@ -266,25 +256,6 @@ class YeddaFrame(Frame):
         cursor_text = ("row: %s\ncol: %s" % (row_column[0], row_column[-1]))
         self.cursorIndex.config(text=cursor_text)
 
-    def returnButton(self):
-        if self.debug:
-            print "Action Track: returnButton"
-        self.pushToHistory()
-        # self.returnEnter(event)
-        content = self.entry.get()
-        self.clearCommand()
-        self.executeEntryCommand(content)
-        return content
-
-    def returnEnter(self, event):
-        if self.debug:
-            print "Action Track: returnEnter"
-        self.pushToHistory()
-        content = self.entry.get()
-        self.clearCommand()
-        self.executeEntryCommand(content)
-        return content
-
     def textReturnEnter(self, event):
         press_key = event.char
         if self.debug:
@@ -292,7 +263,6 @@ class YeddaFrame(Frame):
         self.pushToHistory()
         print "event: ", press_key
         # content = self.text.get()
-        self.clearCommand()
         self.add_remove_tag(press_key.lower())
         # self.deleteTextInput()
         return press_key
@@ -319,11 +289,6 @@ class YeddaFrame(Frame):
         print "before:", self.text.index(INSERT)
         self.text.insert(INSERT, 'p')
         print "after:", self.text.index(INSERT)
-
-    def clearCommand(self):
-        if self.debug:
-            print "Action Track: clearCommand"
-        self.entry.delete(0, 'end')
 
     def getText(self):
         textContent = self.text.get("1.0", "end-1c")
@@ -427,40 +392,6 @@ class YeddaFrame(Frame):
             content = content.encode('utf-8')
             self.writeFile(self.fileName, content, cursor_index)
 
-    def executeEntryCommand(self, command):
-        if self.debug:
-            print "Action Track: executeEntryCommand"
-        if len(command) == 0:
-            currentCursor = self.text.index(INSERT)
-            newCurrentCursor = str(int(currentCursor.split('.')[0]) + 1) + ".0"
-            self.text.mark_set(INSERT, newCurrentCursor)
-            self.setCursorLabel(newCurrentCursor)
-        else:
-            command_list = decompose_command(command)
-            for idx in range(0, len(command_list)):
-                command = command_list[idx]
-                if len(command) == 2:
-                    select_num = int(command[0])
-                    command = command[1]
-                    content = self.getText()
-                    cursor_index = self.text.index(INSERT)
-                    newcursor_index = cursor_index.split('.')[0] + "." + str(
-                        int(cursor_index.split('.')[1]) + select_num)
-                    # print "new cursor position: ", select_num, " with ", newcursor_index, "with ", newcursor_index
-                    selected_string = self.text.get(cursor_index, newcursor_index).encode('utf-8')
-                    aboveHalf_content = self.text.get('1.0', cursor_index).encode('utf-8')
-                    followHalf_content = self.text.get(cursor_index, "end-1c").encode('utf-8')
-                    if command in self.pressCommand:
-                        if len(selected_string) > 0:
-                            # print "insert index: ", self.text.index(INSERT) 
-                            followHalf_content, newcursor_index = self.replaceString(followHalf_content,
-                                                                                     selected_string, command,
-                                                                                     newcursor_index)
-                            content = self.addRecommendContent(aboveHalf_content, followHalf_content,
-                                                               self.recommendFlag)
-                            # content = aboveHalf_content + followHalf_content
-                    self.writeFile(self.fileName, content, newcursor_index)
-
     def deleteTextInput(self, event):
         if self.debug:
             print "Action Track: deleteTextInput"
@@ -483,7 +414,7 @@ class YeddaFrame(Frame):
             newcursor_index = cursor_index.split('.')[0] + "." + str(
                 int(cursor_index.split('.')[1]) + len(self.pressCommand[replaceType]) + 5)
         else:
-            print "Invaild command!"
+            print "Invalid command!"
             print "cursor index: ", self.text.index(INSERT)
             return content, cursor_index
         content = content.replace(string, new_string, 1)
