@@ -109,7 +109,7 @@ class YeddaFrame(Frame):
         # recommend_off_button = Button(self, text="RMOff", command=self.setInNotRecommendModel)
         # recommend_off_button.grid(row=3, column=self.textColumn + 1)
 
-        remap_button = Button(self, text="ReMap", command=self.renewPressCommand)
+        remap_button = Button(self, text="ReMap", command=self.do_remap_of_shortcuts)
         remap_button.grid(row=4, column=self.textColumn + 1, pady=4)
 
         quit_button = Button(self, text="Quit", command=self.quit)
@@ -159,7 +159,7 @@ class YeddaFrame(Frame):
         self.text.bind('<Double-Button-1>', self.doubleLeftClick)
         self.text.bind('<ButtonRelease-1>', self.singleLeftClick)
 
-        self.setMapShow()
+        self.show_shortcut_map()
 
         # cursor index show with the left click
 
@@ -429,7 +429,7 @@ class YeddaFrame(Frame):
         lineStart = currentCursor.split('.')[0] + '.0'
         lineEnd = currentCursor.split('.')[0] + '.end'
 
-        if self.colorAllChunk:
+        if self.reprocess_whole_file:
             self.text.mark_set("matchStart", "1.0")
             self.text.mark_set("matchEnd", "1.0")
             self.text.mark_set("searchLimit", 'end-1c')
@@ -456,7 +456,7 @@ class YeddaFrame(Frame):
             self.text.tag_add("edge", lastsecond_pos, last_pos)
 
         # color the most inside span for nested span, scan from begin to end again  
-        if self.colorAllChunk:
+        if self.reprocess_whole_file:
             self.text.mark_set("matchStart", "1.0")
             self.text.mark_set("matchEnd", "1.0")
             self.text.mark_set("searchLimit", 'end-1c')
@@ -499,9 +499,9 @@ class YeddaFrame(Frame):
         self.history.append(currentList)
 
     # update shortcut map
-    def renewPressCommand(self):
+    def do_remap_of_shortcuts(self):
         if self.debug:
-            print "Action Track: renewPressCommand"
+            print "Action Track: do_remap_of_shortcuts"
         seq = 0
         new_dict = {}
         listLength = len(self.label_entry_list)
@@ -519,13 +519,13 @@ class YeddaFrame(Frame):
             self.shortcut_label_list[listLength - idx].config(text="NON= ")
         with open(self.configFile, 'wb') as fp:
             pickle.dump(self.pressCommand, fp)
-        self.setMapShow()
+        self.show_shortcut_map()
         tkMessageBox.showinfo("Remap Notification",
                               "Shortcut map has been updated!\n\nConfigure file has been saved in File:" +
                               self.configFile)
 
     # show shortcut map
-    def setMapShow(self):
+    def show_shortcut_map(self):
         label_color = "black"
         label_font_size = 14
         if os.path.isfile(self.configFile):
