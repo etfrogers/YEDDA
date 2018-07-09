@@ -54,7 +54,7 @@ class YeddaFrame(Frame):
         self.textColumn = 5
         self.tagScheme = "BMES"
         self.onlyNP = False  # for exporting sequence 
-        self.keepRecommend = True
+        self.keep_recommend = True
 
         '''
         self.segmented: for exporting sequence, if True then split words with space, else split character without space
@@ -63,13 +63,13 @@ class YeddaFrame(Frame):
         If your data is Chinese without segmentation, you need to set this flag as False
         '''
         self.segmented = True  # False for non-segmentated Chinese, True for English or Segmented Chinese
-        self.configFile = "config"
-        self.entityRe = r'\[\@.*?\#.*?\*\](?!\#)'
-        self.insideNestEntityRe = r'\[\@\[\@(?!\[\@).*?\#.*?\*\]\#'
-        self.recommendRe = r'\[\$.*?\#.*?\*\](?!\#)'
-        self.goldAndrecomRe = r'\[\@.*?\#.*?\*\](?!\#)'
-        if self.keepRecommend:
-            self.goldAndrecomRe = r'\[[\@\$)].*?\#.*?\*\](?!\#)'
+        self.configFile = "config.pkl"
+        self.entity_regex = re.compile(r'\[@.*?#.*?\*\](?!#)')
+        self.inside_nest_entity_regex = re.compile(r'\[@\[@(?!\[@).*?#.*?\*\]#')
+        self.recommend_regex = re.compile(r'\[\$.*?#.*?\*\](?!#)')
+        self.gold_and_recommend_regex = re.compile(r'\[@.*?#.*?\*\](?!#)')
+        if self.keep_recommend:
+            self.gold_and_recommend_regex = re.compile(r'\[[@$)].*?#.*?\*\](?!#)')
         # configure color
         self.entityColor = "SkyBlue1"
         self.insideNestEntityColor = "light slate blue"
@@ -165,7 +165,7 @@ class YeddaFrame(Frame):
                 altPlusKey = "<Command-Key-" + press_key + ">"
                 self.text.bind(altPlusKey, self.keepCurrent)
 
-        self.text.bind('<Control-Key-z>', self.backToHistory)
+        self.text.bind('<Control-Key-z>', self.go_back_in_history)
         # disable the default  copy behaviour when right click.
         # For MacOS, right click is button 2, other systems are button3
         self.text.bind('<Button-2>', self.rightClick)
@@ -220,7 +220,7 @@ class YeddaFrame(Frame):
         self.recommendFlag = False
         self.RecommendModelFlag.config(text=str(self.recommendFlag))
         content = self.getText()
-        content = remove_recommend_content(content, self.recommendRe)
+        content = remove_recommend_content(content, self.recommend_regex)
         self.writeFile(self.fileName, content, '1.0')
         tkMessageBox.showinfo("Recommend Model", "Recommend Model has been deactivated!")
 
@@ -293,13 +293,13 @@ class YeddaFrame(Frame):
         print "event: ", press_key
         # content = self.text.get()
         self.clearCommand()
-        self.executeCursorCommand(press_key.lower())
+        self.add_remove_tag(press_key.lower())
         # self.deleteTextInput()
         return press_key
 
-    def backToHistory(self, event):
+    def go_back_in_history(self, event):
         if self.debug:
-            print "Action Track: backToHistory"
+            print "Action Track: go_back_in_history"
         if len(self.history) > 0:
             historyCondition = self.history.pop()
             # print "history condition: ", historyCondition
@@ -330,9 +330,9 @@ class YeddaFrame(Frame):
         textContent = textContent.encode('utf-8')
         return textContent
 
-    def executeCursorCommand(self, command):
+    def add_remove_tag(self, command):
         if self.debug:
-            print "Action Track: executeCursorCommand"
+            print "Action Track: add_remove_tag"
         content = self.getText()
         print("Command:" + command)
         try:
@@ -341,7 +341,7 @@ class YeddaFrame(Frame):
             aboveHalf_content = self.text.get('1.0', firstSelection_index)
             followHalf_content = self.text.get(firstSelection_index, "end-1c")
             selected_string = self.text.selection_get()
-            if re.match(self.entityRe, selected_string) is not None:
+            if re.match(self.entity_regex, selected_string) is not None:
                 # if have selected entity
                 new_string_list = selected_string.strip('[@]').rsplit('#', 1)
                 new_string = new_string_list[0]
@@ -364,21 +364,21 @@ class YeddaFrame(Frame):
             content = content.encode('utf-8')
             self.writeFile(self.fileName, content, cursor_index)
         except TclError:
-            # not select text
+            # no text selected - use item under cursor
             cursor_index = self.text.index(INSERT)
             [line_id, column_id] = cursor_index.split('.')
             aboveLine_content = self.text.get('1.0', str(int(line_id) - 1) + '.end')
             belowLine_content = self.text.get(str(int(line_id) + 1) + '.0', "end-1c")
             line = self.text.get(line_id + '.0', line_id + '.end')
             matched_span = (-1, -1)
-            detected_entity = -1  # detected entity type:－1 not detected, 1 detected gold, 2 detected recommend
-            for match in re.finditer(self.entityRe, line):
+            detected_entity = -1  # detected entity type:－1 not detected, 1 detected manual tag, 2 detected recommend
+            for match in self.entity_regex.finditer(line):
                 if match.span()[0] <= int(column_id) & int(column_id) <= match.span()[1]:
                     matched_span = match.span()
                     detected_entity = 1
                     break
             if detected_entity == -1:
-                for match in re.finditer(self.recommendRe, line):
+                for match in self.recommend_regex.finditer(line):
                     if match.span()[0] <= int(column_id) & int(column_id) <= match.span()[1]:
                         matched_span = match.span()
                         detected_entity = 2
@@ -559,7 +559,7 @@ class YeddaFrame(Frame):
         while True:
             self.text.tag_configure("catagory", background=self.entityColor)
             self.text.tag_configure("edge", background=self.entityColor)
-            pos = self.text.search(self.entityRe, "matchEnd", "searchLimit", count=countVar, regexp=True)
+            pos = self.text.search(self.entity_regex.pattern, "matchEnd", "searchLimit", count=countVar, regexp=True)
             if pos == "":
                 break
             self.text.mark_set("matchStart", pos)
@@ -576,7 +576,7 @@ class YeddaFrame(Frame):
             # color recommend type
         while True:
             self.text.tag_configure("recommend", background=self.recommendColor)
-            recommend_pos = self.text.search(self.recommendRe, "recommend_matchEnd", "recommend_searchLimit",
+            recommend_pos = self.text.search(self.recommend_regex.pattern, "recommend_matchEnd", "recommend_searchLimit",
                                              count=countVar, regexp=True)
             if recommend_pos == "":
                 break
@@ -599,7 +599,8 @@ class YeddaFrame(Frame):
             self.text.mark_set("searchLimit", lineEnd)
         while True:
             self.text.tag_configure("insideEntityColor", background=self.insideNestEntityColor)
-            pos = self.text.search(self.insideNestEntityRe, "matchEnd", "searchLimit", count=countVar, regexp=True)
+            pos = self.text.search(self.inside_nest_entity_regex.pattern, "matchEnd", "searchLimit",
+                                   count=countVar, regexp=True)
             if pos == "":
                 break
             self.text.mark_set("matchStart", pos)
@@ -703,9 +704,9 @@ class YeddaFrame(Frame):
                 seqFile.write('\n')
                 continue
             else:
-                if not self.keepRecommend:
-                    line = remove_recommend_content(line, self.recommendRe)
-                wordTagPairs = get_word_tag_pairs(line, self.segmented, self.tagScheme, self.onlyNP, self.goldAndrecomRe)
+                if not self.keep_recommend:
+                    line = remove_recommend_content(line, self.recommend_regex)
+                wordTagPairs = get_word_tag_pairs(line, self.segmented, self.tagScheme, self.onlyNP, self.gold_and_recommend_regex)
                 for wordTag in wordTagPairs:
                     seqFile.write(wordTag)
                 # use null line to seperate sentences
@@ -715,7 +716,7 @@ class YeddaFrame(Frame):
         print "Line number:", lineNum
         showMessage = "Exported file successfully!\n\n"
         showMessage += "Tag scheme: " + self.tagScheme + "\n\n"
-        showMessage += "Keep Recom: " + str(self.keepRecommend) + "\n\n"
+        showMessage += "Keep Recom: " + str(self.keep_recommend) + "\n\n"
         showMessage += "Text Seged: " + str(self.segmented) + "\n\n"
         showMessage += "Line Number: " + str(lineNum) + "\n\n"
         showMessage += "Saved to File: " + new_filename
