@@ -29,7 +29,7 @@ class YeddaFrame(Frame):
         self.parent = parent
         self.fileName = ""
         self.debug = False
-        self.colorAllChunk = True
+        self.reprocess_whole_file = True
         self.recommendFlag = False
         self.history = deque(maxlen=20)
         self.currentContent = deque(maxlen=1)
@@ -66,14 +66,9 @@ class YeddaFrame(Frame):
         self.configFile = "config.pkl"
         self.entity_regex = re.compile(r'\[@.*?#.*?\*\](?!#)')
         self.inside_nest_entity_regex = re.compile(r'\[@\[@(?!\[@).*?#.*?\*\]#')
-        self.recommend_regex = re.compile(r'\[\$.*?#.*?\*\](?!#)')
-        self.gold_and_recommend_regex = re.compile(r'\[@.*?#.*?\*\](?!#)')
-        if self.keep_recommend:
-            self.gold_and_recommend_regex = re.compile(r'\[[@$)].*?#.*?\*\](?!#)')
         # configure color
         self.entityColor = "SkyBlue1"
         self.insideNestEntityColor = "light slate blue"
-        self.recommendColor = 'lightgreen'
         self.selectColor = 'light salmon'
         self.textFontStyle = "Times"
         self.fontWeight = "normal"
@@ -201,19 +196,6 @@ class YeddaFrame(Frame):
         except TclError:
             pass
 
-    def setInRecommendModel(self):
-        self.recommendFlag = True
-        self.RecommendModelFlag.config(text=str(self.recommendFlag))
-        tkMessageBox.showinfo("Recommend Model", "Recommend Model has been activated!")
-
-    def setInNotRecommendModel(self):
-        self.recommendFlag = False
-        self.RecommendModelFlag.config(text=str(self.recommendFlag))
-        content = self.getText()
-        content = remove_recommend_content(content, self.recommend_regex)
-        self.writeFile(self.fileName, content, '1.0')
-        tkMessageBox.showinfo("Recommend Model", "Recommend Model has been deactivated!")
-
     def onOpen(self):
         ftypes = [('all files', '.*'), ('text files', '.txt'), ('ann files', '.ann')]
         dlg = tkFileDialog.Open(self, filetypes=ftypes)
@@ -306,7 +288,7 @@ class YeddaFrame(Frame):
             aboveHalf_content = self.text.get('1.0', firstSelection_index)
             followHalf_content = self.text.get(firstSelection_index, "end-1c")
             selected_string = self.text.selection_get()
-            if re.match(self.entity_regex, selected_string) is not None:
+            if self.entity_regex.match(selected_string) is not None:
                 # if have selected entity
                 new_string_list = selected_string.strip('[@]').rsplit('#', 1)
                 new_string = new_string_list[0]
@@ -319,12 +301,10 @@ class YeddaFrame(Frame):
 
             if command == "q":
                 print 'q: remove entity label'
-                entity_content = selected_string
             else:
                 if len(selected_string) > 0:
-                    entity_content, cursor_index = self.add_tag_around_string(selected_string, command, cursor_index)
-            aboveHalf_content += entity_content
-            content = self.addRecommendContent(aboveHalf_content, afterEntity_content, self.recommendFlag)
+                    selected_string, cursor_index = self.add_tag_around_string(selected_string, command, cursor_index)
+            content = aboveHalf_content + selected_string + afterEntity_content
             content = content.encode('utf-8')
             self.writeFile(self.fileName, content, cursor_index)
         except TclError:
@@ -335,26 +315,18 @@ class YeddaFrame(Frame):
             belowLine_content = self.text.get(str(int(line_id) + 1) + '.0', "end-1c")
             line = self.text.get(line_id + '.0', line_id + '.end')
             matched_span = (-1, -1)
-            detected_entity = -1  # detected entity type:－1 not detected, 1 detected manual tag, 2 detected recommend
+            detected_entity = -1  # detected entity type:－1 not detected, 1 detected manual tag
             for match in self.entity_regex.finditer(line):
                 if match.span()[0] <= int(column_id) & int(column_id) <= match.span()[1]:
                     matched_span = match.span()
                     detected_entity = 1
                     break
-            if detected_entity == -1:
-                for match in self.recommend_regex.finditer(line):
-                    if match.span()[0] <= int(column_id) & int(column_id) <= match.span()[1]:
-                        matched_span = match.span()
-                        detected_entity = 2
-                        break
             line_before_entity = line
             line_after_entity = ""
             if matched_span[1] > 0:
                 selected_string = line[matched_span[0]:matched_span[1]]
                 if detected_entity == 1:
                     new_string_list = selected_string.strip('[@*]').rsplit('#', 1)
-                elif detected_entity == 2:
-                    new_string_list = selected_string.strip('[$*]').rsplit('#', 1)
                 new_string = new_string_list[0]
                 old_entity_type = new_string_list[1]
                 line_before_entity = line[:matched_span[0]]
@@ -431,20 +403,11 @@ class YeddaFrame(Frame):
                 ann_file = open(new_name, 'w')
                 ann_file.write(content)
                 ann_file.close()
-                # print "Writed to new file: ", new_name
+                # print "Writen to new file: ", new_name
             self.autoLoadNewFile(new_name, newcursor_index)
             # self.generateSequenceFile()
         else:
             print "Don't write to empty file!"
-
-    def addRecommendContent(self, train_data, decode_data, recommendMode):
-        if not recommendMode:
-            content = train_data + decode_data
-        else:
-            if self.debug:
-                print "Action Track: addRecommendContent, start Recommend entity"
-            content = maximum_matching(train_data, decode_data)
-        return content
 
     def autoLoadNewFile(self, fileName, newcursor_index):
         if self.debug:
@@ -473,16 +436,10 @@ class YeddaFrame(Frame):
             self.text.mark_set("matchStart", "1.0")
             self.text.mark_set("matchEnd", "1.0")
             self.text.mark_set("searchLimit", 'end-1c')
-            self.text.mark_set("recommend_matchStart", "1.0")
-            self.text.mark_set("recommend_matchEnd", "1.0")
-            self.text.mark_set("recommend_searchLimit", 'end-1c')
         else:
             self.text.mark_set("matchStart", lineStart)
             self.text.mark_set("matchEnd", lineStart)
             self.text.mark_set("searchLimit", lineEnd)
-            self.text.mark_set("recommend_matchStart", lineStart)
-            self.text.mark_set("recommend_matchEnd", lineStart)
-            self.text.mark_set("recommend_searchLimit", lineEnd)
         while True:
             self.text.tag_configure("catagory", background=self.entityColor)
             self.text.tag_configure("edge", background=self.entityColor)
@@ -500,20 +457,6 @@ class YeddaFrame(Frame):
             self.text.tag_add("catagory", second_pos, lastsecond_pos)
             self.text.tag_add("edge", first_pos, second_pos)
             self.text.tag_add("edge", lastsecond_pos, last_pos)
-            # color recommend type
-        while True:
-            self.text.tag_configure("recommend", background=self.recommendColor)
-            recommend_pos = self.text.search(self.recommend_regex.pattern, "recommend_matchEnd", "recommend_searchLimit",
-                                             count=countVar, regexp=True)
-            if recommend_pos == "":
-                break
-            self.text.mark_set("recommend_matchStart", recommend_pos)
-            self.text.mark_set("recommend_matchEnd", "%s+%sc" % (recommend_pos, countVar.get()))
-
-            first_pos = recommend_pos
-            # second_pos = "%s+%sc" % (recommend_pos, str(1))
-            lastsecond_pos = "%s+%sc" % (recommend_pos, str(int(countVar.get())))
-            self.text.tag_add("recommend", first_pos, lastsecond_pos)
 
         # color the most inside span for nested span, scan from begin to end again  
         if self.colorAllChunk:
