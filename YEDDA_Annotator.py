@@ -44,8 +44,8 @@ class YeddaFrame(Frame):
                              }
         self.allKey = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
         self.controlCommand = {'q': "unTag", 'ctrl+z': 'undo'}
-        self.labelEntryList = []
-        self.shortcutLabelList = []
+        self.label_entry_list = []
+        self.shortcut_label_list = []
         # default GUI display parameter
         if len(self.pressCommand) > 20:
             self.textRow = len(self.pressCommand)
@@ -635,10 +635,10 @@ class YeddaFrame(Frame):
             print "Action Track: renewPressCommand"
         seq = 0
         new_dict = {}
-        listLength = len(self.labelEntryList)
+        listLength = len(self.label_entry_list)
         delete_num = 0
         for key in sorted(self.pressCommand):
-            label = self.labelEntryList[seq].get()
+            label = self.label_entry_list[seq].get()
             if len(label) > 0:
                 new_dict[key] = label
             else:
@@ -646,8 +646,8 @@ class YeddaFrame(Frame):
             seq += 1
         self.pressCommand = new_dict
         for idx in range(1, delete_num + 1):
-            self.labelEntryList[listLength - idx].delete(0, END)
-            self.shortcutLabelList[listLength - idx].config(text="NON= ")
+            self.label_entry_list[listLength - idx].delete(0, END)
+            self.shortcut_label_list[listLength - idx].config(text="NON= ")
         with open(self.configFile, 'wb') as fp:
             pickle.dump(self.pressCommand, fp)
         self.setMapShow()
@@ -657,27 +657,30 @@ class YeddaFrame(Frame):
 
     # show shortcut map
     def setMapShow(self):
+        label_color = "black"
+        label_font_size = 14
         if os.path.isfile(self.configFile):
             with open(self.configFile, 'rb') as fp:
                 self.pressCommand = pickle.load(fp)
-        hight = len(self.pressCommand)
-        width = 2
-        row = 0
-        mapLabel = Label(self, text="Shortcuts map Labels", foreground="blue", font=(self.textFontStyle, 14, self.fontWeight))
-        mapLabel.grid(row=0, column=self.textColumn + 2, columnspan=2, rowspan=1, padx=10)
-        self.labelEntryList = []
-        self.shortcutLabelList = []
-        for key in sorted(self.pressCommand):
-            row += 1
-            # print "key: ", key, "  command: ", self.pressCommand[key]
-            symbolLabel = Label(self, text=key.upper() + ": ", foreground="blue", font=(self.textFontStyle, 14, self.fontWeight))
-            symbolLabel.grid(row=row, column=self.textColumn + 2, columnspan=1, rowspan=1, padx=3)
-            self.shortcutLabelList.append(symbolLabel)
 
-            labelEntry = Entry(self, foreground="blue", font=(self.textFontStyle, 14, self.fontWeight))
-            labelEntry.insert(0, self.pressCommand[key])
-            labelEntry.grid(row=row, column=self.textColumn + 3, columnspan=1, rowspan=1)
-            self.labelEntryList.append(labelEntry)
+        mapLabel = Label(self, text="Tags", foreground=label_color,
+                         font=(self.textFontStyle, label_font_size, self.fontWeight))
+        mapLabel.grid(row=0, column=self.textColumn + 2, columnspan=2, rowspan=1, padx=10)
+        self.label_entry_list = []
+        self.shortcut_label_list = []
+        for i, key in enumerate(sorted(self.pressCommand)):
+            row = i+1
+            # print "key: ", key, "  command: ", self.pressCommand[key]
+            shortcut_label = Label(self, text=key.lower() + ": ", foreground=label_color,
+                                   font=(self.textFontStyle, label_font_size, self.fontWeight))
+            shortcut_label.grid(row=row, column=self.textColumn + 2, columnspan=1, rowspan=1, padx=0)
+            self.shortcut_label_list.append(shortcut_label)
+
+            label_entry = Entry(self, foreground=label_color,
+                                font=(self.textFontStyle, label_font_size, self.fontWeight))
+            label_entry.insert(0, self.pressCommand[key])
+            label_entry.grid(row=row, column=self.textColumn + 3, columnspan=1, rowspan=1)
+            self.label_entry_list.append(label_entry)
             # print "row: ", row
 
     def getCursorIndex(self):
