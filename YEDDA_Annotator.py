@@ -21,7 +21,7 @@ from utils.recommend import *
 
 
 # noinspection PyPep8Naming
-class Example(Frame):
+class YeddaFrame(Frame):
     def __init__(self, parent):
         Frame.__init__(self, parent)
         self.Version = "YEDDA-V1.0 Annotator"
@@ -57,11 +57,12 @@ class Example(Frame):
         self.keepRecommend = True
 
         '''
-        self.seged: for exporting sequence, if True then split words with space, else split character without space
-        for example, if your data is segmentated Chinese (or English) with words seperated by a space, you need to set this flag as true
-        if your data is Chinese without segmentation, you need to set this flag as False
+        self.segmented: for exporting sequence, if True then split words with space, else split character without space
+        For example, if your data is segmented Chinese (or English) with words separated by a space, you need to 
+        set this flag as true
+        If your data is Chinese without segmentation, you need to set this flag as False
         '''
-        self.seged = False  # False for non-segmentated Chinese, True for English or Segmented Chinese
+        self.segmented = False  # False for non-segmentated Chinese, True for English or Segmented Chinese
         self.configFile = "config"
         self.entityRe = r'\[\@.*?\#.*?\*\](?!\#)'
         self.insideNestEntityRe = r'\[\@\[\@(?!\[\@).*?\#.*?\*\]\#'
@@ -77,6 +78,7 @@ class Example(Frame):
         self.textFontStyle = "Times"
         self.initUI()
 
+    # noinspection PyAttributeOutsideInit
     def initUI(self):
 
         self.parent.title(self.Version)
@@ -102,23 +104,23 @@ class Example(Frame):
         self.sb['command'] = self.text.yview
         # self.sb.pack()
 
-        abtn = Button(self, text="Open", command=self.onOpen)
-        abtn.grid(row=1, column=self.textColumn + 1)
+        open_btn = Button(self, text="Open", command=self.onOpen)
+        open_btn.grid(row=1, column=self.textColumn + 1)
 
-        recButton = Button(self, text="RMOn", command=self.setInRecommendModel)
-        recButton.grid(row=2, column=self.textColumn + 1)
+        recommend_on_button = Button(self, text="RMOn", command=self.setInRecommendModel)
+        recommend_on_button.grid(row=2, column=self.textColumn + 1)
 
-        noRecButton = Button(self, text="RMOff", command=self.setInNotRecommendModel)
-        noRecButton.grid(row=3, column=self.textColumn + 1)
+        recommend_off_button = Button(self, text="RMOff", command=self.setInNotRecommendModel)
+        recommend_off_button.grid(row=3, column=self.textColumn + 1)
 
-        ubtn = Button(self, text="ReMap", command=self.renewPressCommand)
-        ubtn.grid(row=4, column=self.textColumn + 1, pady=4)
+        remap_button = Button(self, text="ReMap", command=self.renewPressCommand)
+        remap_button.grid(row=4, column=self.textColumn + 1, pady=4)
 
-        exportbtn = Button(self, text="Export", command=self.generateSequenceFile)
-        exportbtn.grid(row=5, column=self.textColumn + 1, pady=4)
+        export_button = Button(self, text="Export", command=self.generateSequenceFile)
+        export_button.grid(row=5, column=self.textColumn + 1, pady=4)
 
-        cbtn = Button(self, text="Quit", command=self.quit)
-        cbtn.grid(row=6, column=self.textColumn + 1, pady=4)
+        quit_button = Button(self, text="Quit", command=self.quit)
+        quit_button.grid(row=6, column=self.textColumn + 1, pady=4)
 
         self.cursorName = Label(self, text="Cursor: ", foreground="Blue", font=(self.textFontStyle, 14, "bold"))
         self.cursorName.grid(row=9, column=self.textColumn + 1, pady=4)
@@ -217,7 +219,7 @@ class Example(Frame):
         self.recommendFlag = False
         self.RecommendModelFlag.config(text=str(self.recommendFlag))
         content = self.getText()
-        content = removeRecommendContent(content, self.recommendRe)
+        content = remove_recommend_content(content, self.recommendRe)
         self.writeFile(self.fileName, content, '1.0')
         tkMessageBox.showinfo("Recommend Model", "Recommend Model has been deactivated!")
 
@@ -432,7 +434,7 @@ class Example(Frame):
             self.text.mark_set(INSERT, newCurrentCursor)
             self.setCursorLabel(newCurrentCursor)
         else:
-            command_list = decompositCommand(command)
+            command_list = decompose_command(command)
             for idx in range(0, len(command_list)):
                 command = command_list[idx]
                 if len(command) == 2:
@@ -649,7 +651,8 @@ class Example(Frame):
             pickle.dump(self.pressCommand, fp)
         self.setMapShow()
         tkMessageBox.showinfo("Remap Notification",
-                              "Shortcut map has been updated!\n\nConfigure file has been saved in File:" + self.configFile)
+                              "Shortcut map has been updated!\n\nConfigure file has been saved in File:" +
+                              self.configFile)
 
     # show shortcut map
     def setMapShow(self):
@@ -696,8 +699,8 @@ class Example(Frame):
                 continue
             else:
                 if not self.keepRecommend:
-                    line = removeRecommendContent(line, self.recommendRe)
-                wordTagPairs = getWordTagPairs(line, self.seged, self.tagScheme, self.onlyNP, self.goldAndrecomRe)
+                    line = remove_recommend_content(line, self.recommendRe)
+                wordTagPairs = get_word_tag_pairs(line, self.segmented, self.tagScheme, self.onlyNP, self.goldAndrecomRe)
                 for wordTag in wordTagPairs:
                     seqFile.write(wordTag)
                 # use null line to seperate sentences
@@ -708,42 +711,42 @@ class Example(Frame):
         showMessage = "Exported file successfully!\n\n"
         showMessage += "Tag scheme: " + self.tagScheme + "\n\n"
         showMessage += "Keep Recom: " + str(self.keepRecommend) + "\n\n"
-        showMessage += "Text Seged: " + str(self.seged) + "\n\n"
+        showMessage += "Text Seged: " + str(self.segmented) + "\n\n"
         showMessage += "Line Number: " + str(lineNum) + "\n\n"
         showMessage += "Saved to File: " + new_filename
         tkMessageBox.showinfo("Export Message", showMessage)
 
 
-def getWordTagPairs(tagedSentence, seged=True, tagScheme="BMES", onlyNP=False, entityRe=r'\[\@.*?\#.*?\*\]'):
-    newSent = tagedSentence.strip('\n').decode('utf-8')
-    filterList = re.findall(entityRe, newSent)
-    newSentLength = len(newSent)
+def get_word_tag_pairs(taged_sentence, segmented=True, tag_scheme="BMES", only_np=False, entity_re=r'\[\@.*?\#.*?\*\]'):
+    new_sent = taged_sentence.strip('\n').decode('utf-8')
+    filter_list = re.findall(entity_re, new_sent)
+    new_sent_length = len(new_sent)
     chunk_list = []
     start_pos = 0
     end_pos = 0
-    if len(filterList) == 0:
-        singleChunkList = [newSent, 0, len(newSent), False]
-        chunk_list.append(singleChunkList)
-        # print singleChunkList
-        singleChunkList = []
+    if len(filter_list) == 0:
+        single_chunk_list = [new_sent, 0, len(new_sent), False]
+        chunk_list.append(single_chunk_list)
+        # print single_chunk_list
+        single_chunk_list = []
     else:
-        for pattern in filterList:
+        for pattern in filter_list:
             # print pattern
-            singleChunkList = []
-            start_pos = end_pos + newSent[end_pos:].find(pattern)
+            single_chunk_list = []
+            start_pos = end_pos + new_sent[end_pos:].find(pattern)
             end_pos = start_pos + len(pattern)
-            singleChunkList.append(pattern)
-            singleChunkList.append(start_pos)
-            singleChunkList.append(end_pos)
-            singleChunkList.append(True)
-            chunk_list.append(singleChunkList)
-            singleChunkList = []
+            single_chunk_list.append(pattern)
+            single_chunk_list.append(start_pos)
+            single_chunk_list.append(end_pos)
+            single_chunk_list.append(True)
+            chunk_list.append(single_chunk_list)
+            single_chunk_list = []
     # chunk_list format:
     full_list = []
     for idx in range(0, len(chunk_list)):
         if idx == 0:
             if chunk_list[idx][1] > 0:
-                full_list.append([newSent[0:chunk_list[idx][1]], 0, chunk_list[idx][1], False])
+                full_list.append([new_sent[0:chunk_list[idx][1]], 0, chunk_list[idx][1], False])
                 full_list.append(chunk_list[idx])
             else:
                 full_list.append(chunk_list[idx])
@@ -754,51 +757,51 @@ def getWordTagPairs(tagedSentence, seged=True, tagScheme="BMES", onlyNP=False, e
                 print "ERROR: found pattern has overlap!", chunk_list[idx][1], ' with ', chunk_list[idx - 1][2]
             else:
                 full_list.append(
-                    [newSent[chunk_list[idx - 1][2]:chunk_list[idx][1]], chunk_list[idx - 1][2], chunk_list[idx][1],
+                    [new_sent[chunk_list[idx - 1][2]:chunk_list[idx][1]], chunk_list[idx - 1][2], chunk_list[idx][1],
                      False])
                 full_list.append(chunk_list[idx])
 
         if idx == len(chunk_list) - 1:
-            if chunk_list[idx][2] > newSentLength:
+            if chunk_list[idx][2] > new_sent_length:
                 print "ERROR: found pattern position larger than sentence length!"
-            elif chunk_list[idx][2] < newSentLength:
-                full_list.append([newSent[chunk_list[idx][2]:newSentLength], chunk_list[idx][2], newSentLength, False])
+            elif chunk_list[idx][2] < new_sent_length:
+                full_list.append([new_sent[chunk_list[idx][2]:new_sent_length], chunk_list[idx][2], new_sent_length, False])
             else:
                 continue
-    return turnFullListToOutputPair(full_list, seged, tagScheme, onlyNP)
+    return turn_full_list_to_output_pair(full_list, segmented, tag_scheme, only_np)
 
 
-def turnFullListToOutputPair(fullList, seged=True, tagScheme="BMES", onlyNP=False):
-    pairList = []
-    for eachList in fullList:
+def turn_full_list_to_output_pair(full_list, segmented=True, tag_scheme="BMES", only_np=False):
+    pair_list = []
+    for eachList in full_list:
         if eachList[3]:
-            contLabelList = eachList[0].strip('[@$]').rsplit('#', 1)
-            if len(contLabelList) != 2:
+            cont_label_list = eachList[0].strip('[@$]').rsplit('#', 1)
+            if len(cont_label_list) != 2:
                 print "Error: sentence format error!"
-            label = contLabelList[1].strip('*')
-            if seged:
-                contLabelList[0] = contLabelList[0].split()
-            if onlyNP:
+            label = cont_label_list[1].strip('*')
+            if segmented:
+                cont_label_list[0] = cont_label_list[0].split()
+            if only_np:
                 label = "NP"
-            outList = outputWithTagScheme(contLabelList[0], label, tagScheme)
-            for eachItem in outList:
-                pairList.append(eachItem)
+            out_list = output_with_tag_scheme(cont_label_list[0], label, tag_scheme)
+            for eachItem in out_list:
+                pair_list.append(eachItem)
         else:
-            if seged:
+            if segmented:
                 eachList[0] = eachList[0].split()
             for idx in range(0, len(eachList[0])):
-                basicContent = eachList[0][idx]
-                if basicContent == ' ':
+                basic_content = eachList[0][idx]
+                if basic_content == ' ':
                     continue
-                pair = basicContent + ' ' + 'O\n'
-                pairList.append(pair.encode('utf-8'))
-    return pairList
+                pair = basic_content + ' ' + 'O\n'
+                pair_list.append(pair.encode('utf-8'))
+    return pair_list
 
 
-def outputWithTagScheme(input_list, label, tagScheme="BMES"):
+def output_with_tag_scheme(input_list, label, tag_scheme="BMES"):
     output_list = []
     list_length = len(input_list)
-    if tagScheme == "BMES":
+    if tag_scheme == "BMES":
         if list_length == 1:
             pair = input_list[0] + ' ' + 'S-' + label + '\n'
             output_list.append(pair.encode('utf-8'))
@@ -821,10 +824,10 @@ def outputWithTagScheme(input_list, label, tagScheme="BMES"):
     return output_list
 
 
-def removeRecommendContent(content, recommendRe=r'\[\$.*?\#.*?\*\](?!\#)'):
+def remove_recommend_content(content, recommend_re=r'\[\$.*?\#.*?\*\](?!\#)'):
     output_content = ""
     last_match_end = 0
-    for match in re.finditer(recommendRe, content):
+    for match in re.finditer(recommend_re, content):
         matched = content[match.span()[0]:match.span()[1]]
         words = matched.strip('[$]').split("#")[0]
         output_content += content[last_match_end:match.span()[0]] + words
@@ -833,7 +836,7 @@ def removeRecommendContent(content, recommendRe=r'\[\$.*?\#.*?\*\](?!\#)'):
     return output_content
 
 
-def decompositCommand(command_string):
+def decompose_command(command_string):
     command_list = []
     each_command = []
     num_select = ''
@@ -855,7 +858,7 @@ def main():
     print("OS:%s" % (platform.system()))
     root = Tk()
     root.geometry("1300x700+200+200")
-    app = Example(root)
+    app = YeddaFrame(root)
     app.setFont(17)
     root.mainloop()
 
