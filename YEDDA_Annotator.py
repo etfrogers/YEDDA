@@ -50,7 +50,7 @@ class YeddaFrame(Frame):
         if len(self.pressCommand) > 20:
             self.textRow = len(self.pressCommand)
         else:
-            self.textRow = 20
+            self.textRow = 12
         self.textColumn = 5
         self.tagScheme = "BMES"
         self.onlyNP = False  # for exporting sequence 
@@ -94,7 +94,7 @@ class YeddaFrame(Frame):
 
         self.lbl = Label(self, text="File: no file is opened")
         self.lbl.grid(sticky=W, pady=4, padx=5)
-        self.fnt = tkFont.Font(family=self.textFontStyle, size=self.textRow, weight="bold", underline=0)
+        self.fnt = tkFont.Font(family=self.textFontStyle, size=self.textRow, underline=0)
         self.text = Text(self, font=self.fnt, selectbackground=self.selectColor)
         self.text.grid(row=1, column=0, columnspan=self.textColumn, rowspan=self.textRow, padx=12, sticky=E + W + S + N)
 
@@ -859,7 +859,7 @@ def main():
     root = Tk()
     root.geometry("1300x700+200+200")
     app = YeddaFrame(root)
-    app.setFont(17)
+    app.setFont(12)
     root.mainloop()
 
 
