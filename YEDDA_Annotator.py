@@ -242,8 +242,8 @@ class YeddaFrame(Frame):
             self.setCursorLabel(self.text.index(INSERT))
 
     def readFile(self, filename):
-        f = open(filename, "rU")
-        text = f.read()
+        with open(filename, "rU") as f:
+            text = f.read()
         self.fileName = filename
         return text
 
