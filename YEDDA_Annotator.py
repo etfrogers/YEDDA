@@ -64,7 +64,7 @@ class YeddaFrame(Frame):
         '''
         self.segmented = True  # False for non-segmentated Chinese, True for English or Segmented Chinese
         self.configFile = "config.pkl"
-        self.entity_regex = re.compile(r'<([\w-]+?)>.*?</\1>', flags=re.DOTALL)
+        self.entity_regex = re.compile(r'<([\w-]+?)>(.*?)</\1>', flags=re.DOTALL)
         self.inside_nest_entity_regex = re.compile(r'\[@\[@(?!\[@).*?#.*?\*\]#')
         # configure color
         self.entityColor = "SkyBlue1"
@@ -264,15 +264,16 @@ class YeddaFrame(Frame):
             aboveHalf_content = self.text.get('1.0', firstSelection_index)
             followHalf_content = self.text.get(firstSelection_index, "end-1c")
             selected_string = self.text.selection_get()
-            if self.entity_regex.match(selected_string) is not None:
+            match = self.entity_regex.match(selected_string)
+            if match is not None:
                 # if have selected entity
-                new_string_list = selected_string.strip('[@]').rsplit('#', 1)
-                new_string = new_string_list[0]
+                new_string = match.group(2)
+                tag_name = match.group(1)
                 followHalf_content = followHalf_content.replace(selected_string, new_string, 1)
                 selected_string = new_string
                 # cursor_index = "%s - %sc" % (cursor_index, str(len(new_string_list[1])+4))
                 cursor_index = cursor_index.split('.')[0] + "." + str(
-                    int(cursor_index.split('.')[1]) - len(new_string_list[1]) + 4)
+                    int(cursor_index.split('.')[1]) - (len(tag_name)*2 + 5))
             afterEntity_content = followHalf_content[len(selected_string):]
 
             if command == "q":
