@@ -64,7 +64,7 @@ class YeddaFrame(Frame):
         '''
         self.segmented = True  # False for non-segmentated Chinese, True for English or Segmented Chinese
         self.configFile = "config.pkl"
-        self.entity_regex = re.compile(r'<([\w-]+?)>.*?</\1>')
+        self.entity_regex = re.compile(r'<([\w-]+?)>.*?</\1>', flags=re.DOTALL)
         self.inside_nest_entity_regex = re.compile(r'\[@\[@(?!\[@).*?#.*?\*\]#')
         # configure color
         self.entityColor = "SkyBlue1"
@@ -420,7 +420,8 @@ class YeddaFrame(Frame):
         while True:
             self.text.tag_configure("catagory", background=self.entityColor)
             self.text.tag_configure("edge", background=self.entityColor)
-            pos = self.text.search(self.entity_regex.pattern, "matchEnd", "searchLimit", count=countVar, regexp=True)
+            pos = self.text.search(self.force_newline_matching(self.entity_regex.pattern),
+                                   "matchEnd", "searchLimit", count=countVar, regexp=True)
             if pos == "":
                 break
             self.text.mark_set("matchStart", pos)
@@ -455,6 +456,9 @@ class YeddaFrame(Frame):
             first_pos = "%s + %sc" % (pos, 2)
             last_pos = "%s + %sc" % (pos, str(int(countVar.get()) - 1))
             self.text.tag_add("insideEntityColor", first_pos, last_pos)
+
+    def force_newline_matching(self, pattern):
+        return "***:(?s)" + pattern
 
     def pushToHistory(self):
         if self.debug:
