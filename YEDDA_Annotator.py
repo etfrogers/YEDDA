@@ -103,12 +103,6 @@ class YeddaFrame(Frame):
         open_btn = Button(self, text="Open", command=self.onOpen)
         open_btn.grid(row=1, column=self.textColumn + 1)
 
-        # recommend_on_button = Button(self, text="RMOn", command=self.setInRecommendModel)
-        # recommend_on_button.grid(row=2, column=self.textColumn + 1)
-        #
-        # recommend_off_button = Button(self, text="RMOff", command=self.setInNotRecommendModel)
-        # recommend_off_button.grid(row=3, column=self.textColumn + 1)
-
         remap_button = Button(self, text="ReMap", command=self.do_remap_of_shortcuts)
         remap_button.grid(row=4, column=self.textColumn + 1, pady=4)
 
@@ -120,21 +114,6 @@ class YeddaFrame(Frame):
         self.cursorIndex = Label(self, text=("row: %s\ncol: %s" % (0, 0)), foreground="red",
                                  font=(self.textFontStyle, 14, self.fontWeight))
         self.cursorIndex.grid(row=10, column=self.textColumn + 1, pady=4)
-
-        self.RecommendModelName = Label(self, text="RModel: ", foreground="Blue", font=(self.textFontStyle, 14, self.fontWeight))
-        self.RecommendModelName.grid(row=12, column=self.textColumn + 1, pady=4)
-        self.RecommendModelFlag = Label(self, text=str(self.recommendFlag), foreground="red",
-                                        font=(self.textFontStyle, 14, self.fontWeight))
-        self.RecommendModelFlag.grid(row=13, column=self.textColumn + 1, pady=4)
-
-        # recommend_value = StringVar()
-        # recommend_value.set("R")
-        # a = Radiobutton(self.parent,  text="Recommend",   width=12, variable=recommend_value, value="R")
-        # # a.grid(row =1 , column = 2)
-        # a.pack(side='left')
-        # b = Radiobutton(self.parent, text="NotRecommend",   width=12,  variable=recommend_value, value="N")
-        # # b.grid(row =1 , column = 3)
-        # b.pack(side='left')
 
         # for press_key in self.pressCommand.keys():
         for idx in range(0, len(self.allKey)):
@@ -354,7 +333,7 @@ class YeddaFrame(Frame):
             else:
                 followHalf_content = line_after_entity
 
-            content = self.addRecommendContent(aboveHalf_content, followHalf_content, self.recommendFlag)
+            content = aboveHalf_content + followHalf_content
             content = content.encode('utf-8')
             self.writeFile(self.fileName, content, cursor_index)
 
