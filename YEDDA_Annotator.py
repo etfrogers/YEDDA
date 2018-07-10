@@ -22,6 +22,7 @@ from utils.recommend import *
 
 # noinspection PyPep8Naming
 class YeddaFrame(Frame):
+    # noinspection PyMissingConstructor
     def __init__(self, parent):
         Frame.__init__(self, parent)
         self.Version = "YEDDA-V1.0 Annotator"
@@ -52,17 +53,9 @@ class YeddaFrame(Frame):
         else:
             self.textRow = 12
         self.textColumn = 5
-        self.tagScheme = "BMES"
         self.onlyNP = False  # for exporting sequence 
         self.keep_recommend = True
 
-        '''
-        self.segmented: for exporting sequence, if True then split words with space, else split character without space
-        For example, if your data is segmented Chinese (or English) with words separated by a space, you need to 
-        set this flag as true
-        If your data is Chinese without segmentation, you need to set this flag as False
-        '''
-        self.segmented = True  # False for non-segmentated Chinese, True for English or Segmented Chinese
         self.configFile = "config.pkl"
         self.entity_regex = re.compile(r'<([\w-]+?)>(.*?)</\1>', flags=re.DOTALL)
         self.inside_nest_entity_regex = re.compile(r'\[@\[@(?!\[@).*?#.*?\*\]#')
@@ -421,8 +414,8 @@ class YeddaFrame(Frame):
             if pos == "":
                 break
             self.text.mark_set("matchStart", pos)
-            # this sets the next place the regex will search from. Searching frm just after the start allows for
-            # overlapping matches to work. Previously it search from the end of teh previous match
+            # This sets the next place the regex will search from. Searching from just after the start allows for
+            # overlapping matches to work. Previously it searched from the end of the previous match
             self.text.mark_set("matchEnd", "%s+%sc" % (pos, 1))
 
             first_pos = pos
