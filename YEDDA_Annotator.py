@@ -451,7 +451,8 @@ class YeddaFrame(Frame):
             last_pos = "%s + %sc" % (pos, str(int(countVar.get()) - 1))
             self.text.tag_add("insideEntityColor", first_pos, last_pos)
 
-    def force_newline_matching(self, pattern):
+    @staticmethod
+    def force_newline_matching(pattern):
         return "***:(?s)" + pattern
 
     def pushToHistory(self):
