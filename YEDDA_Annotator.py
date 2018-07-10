@@ -422,7 +422,9 @@ class YeddaFrame(Frame):
             if pos == "":
                 break
             self.text.mark_set("matchStart", pos)
-            self.text.mark_set("matchEnd", "%s+%sc" % (pos, countVar.get()))
+            # this sets the next place the regex will search from. Searching frm just after the start allows for
+            # overlapping matches to work. Previously it search from the end of teh previous match
+            self.text.mark_set("matchEnd", "%s+%sc" % (pos, 1))
 
             first_pos = pos
             second_pos = "%s+%sc" % (pos, str(1))
