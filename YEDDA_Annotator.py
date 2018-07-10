@@ -415,8 +415,7 @@ class YeddaFrame(Frame):
             self.text.mark_set("matchEnd", lineStart)
             self.text.mark_set("searchLimit", lineEnd)
         while True:
-            self.text.tag_configure("catagory", background=self.entityColor)
-            self.text.tag_configure("edge", background=self.entityColor)
+            self.text.tag_configure("category", background=self.entityColor)
             pos = self.text.search(self.force_newline_matching(self.entity_regex.pattern),
                                    "matchEnd", "searchLimit", count=countVar, regexp=True)
             if pos == "":
@@ -427,15 +426,11 @@ class YeddaFrame(Frame):
             self.text.mark_set("matchEnd", "%s+%sc" % (pos, 1))
 
             first_pos = pos
-            second_pos = "%s+%sc" % (pos, str(1))
-            lastsecond_pos = "%s+%sc" % (pos, str(int(countVar.get()) - 1))
             last_pos = "%s + %sc" % (pos, countVar.get())
 
-            self.text.tag_add("catagory", second_pos, lastsecond_pos)
-            self.text.tag_add("edge", first_pos, second_pos)
-            self.text.tag_add("edge", lastsecond_pos, last_pos)
+            self.text.tag_add("category", first_pos, last_pos)
 
-        # color the most inside span for nested span, scan from begin to end again  
+        # color the most inside span for nested span, scan from begin to end again
         if self.reprocess_whole_file:
             self.text.mark_set("matchStart", "1.0")
             self.text.mark_set("matchEnd", "1.0")
