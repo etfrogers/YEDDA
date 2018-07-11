@@ -14,10 +14,12 @@ import tkFileDialog
 import tkFont
 import tkMessageBox
 from Tkinter import *
-from collections import deque
+from collections import deque, namedtuple
 from ttk import *  # Frame, Button, Label, Style, Scrollbar
+import csv
 
-from utils.recommend import *
+Tag = namedtuple('Tag', ['description', 'color'])
+Color = namedtuple('Color', ['name', 'hex', 'rgb', 'cmyk'])
 
 
 # noinspection PyPep8Naming
@@ -34,19 +36,25 @@ class YeddaFrame(Frame):
         self.recommendFlag = False
         self.history = deque(maxlen=20)
         self.currentContent = deque(maxlen=1)
-        self.pressCommand = {'a': "Artifical",
-                             'b': "Event",
-                             'c': "Fin-Concept",
-                             'd': "Location",
-                             'e': "Organization",
-                             'f': "Person",
-                             'g': "Sector",
-                             'h': "Other"
+        colors = self.distinct_colors()
+        self.pressCommand = {'a': Tag("Tag1", colors[0].hex),
+                             'b': Tag("Tag2", colors[1].hex),
+                             'c': Tag("Tag3", colors[2].hex),
+                             'd': Tag("Tag4", colors[3].hex),
+                             'e': Tag("Tag5", colors[4].hex),
+                             'f': Tag("Tag6", colors[5].hex),
+                             'g': Tag("Tag7", colors[6].hex),
+                             'h': Tag("Tag8", colors[7].hex),
+                             'i': Tag("Tag9", colors[8].hex),
+                             'j': Tag("Tag10", colors[9].hex),
+                             'k': Tag("Tag11", colors[10].hex),
+                             'l': Tag("Tag12", colors[11].hex)
                              }
         self.allKey = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
         self.controlCommand = {'q': "unTag", 'ctrl+z': 'undo'}
         self.label_entry_list = []
         self.shortcut_label_list = []
+        self.label_patch_list = []
         # default GUI display parameter
         if len(self.pressCommand) > 20:
             self.textRow = len(self.pressCommand)
@@ -445,6 +453,40 @@ class YeddaFrame(Frame):
     def force_newline_matching(pattern):
         return "***:(?s)" + pattern
 
+    @staticmethod
+    def distinct_colors():
+        # Color list taken from https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
+        color_string = \
+        '''Red	#e6194b	(230, 25, 75)	(0, 100, 66, 0)
+        Green	#3cb44b	(60, 180, 75)	(75, 0, 100, 0)
+        Yellow	#ffe119	(255, 225, 25)	(0, 25, 95, 0)
+        Blue	#0082c8	(0, 130, 200)	(100, 35, 0, 0)
+        Orange	#f58231	(245, 130, 48)	(0, 60, 92, 0)
+        Purple	#911eb4	(145, 30, 180)	(35, 70, 0, 0)
+        Cyan	#46f0f0	(70, 240, 240)	(70, 0, 0, 0)
+        Magenta	#f032e6	(240, 50, 230)	(0, 100, 0, 0)
+        Lime	#d2f53c	(210, 245, 60)	(35, 0, 100, 0)
+        Pink	#fabebe	(250, 190, 190)	(0, 30, 15, 0)
+        Teal	#008080	(0, 128, 128)	(100, 0, 0, 50)
+        Lavender	#e6beff	(230, 190, 255)	(10, 25, 0, 0)
+        Brown	#aa6e28	(170, 110, 40)	(0, 35, 75, 33)
+        Beige	#fffac8	(255, 250, 200)	(5, 10, 30, 0)
+        Maroon	#800000	(128, 0, 0)	(0, 100, 100, 50)
+        Mint	#aaffc3	(170, 255, 195)	(33, 0, 23, 0)
+        Olive	#808000	(128, 128, 0)	(0, 0, 100, 50)
+        Coral	#ffd8b1	(255, 215, 180)	(0, 15, 30, 0)
+        Navy	#000080	(0, 0, 128)	(100, 100, 0, 50)
+        Grey	#808080	(128, 128, 128)	(0, 0, 0, 50)
+        White	#FFFFFF	(255, 255, 255)	(0, 0, 0, 0)
+        Black	#000000	(0, 0, 0)	(0, 0, 0, 100)'''
+
+        # f = StringIO(color_string)
+        reader = csv.reader(color_string.split('\n'), delimiter='\t')
+        colors = []
+        for row in reader:
+            colors.append(Color(*row))
+        return colors
+
     def pushToHistory(self):
         if self.debug:
             print "Action Track: pushToHistory"
@@ -506,6 +548,8 @@ class YeddaFrame(Frame):
         mapLabel.grid(row=0, column=self.textColumn + 2, columnspan=2, rowspan=1, padx=10)
         self.label_entry_list = []
         self.shortcut_label_list = []
+        self.label_patch_list = []
+        patch_size = 25
         for i, key in enumerate(sorted(self.pressCommand)):
             row = i+1
             # print "key: ", key, "  command: ", self.pressCommand[key]
@@ -516,9 +560,15 @@ class YeddaFrame(Frame):
 
             label_entry = Entry(self, foreground=label_color,
                                 font=(self.textFontStyle, label_font_size, self.fontWeight))
-            label_entry.insert(0, self.pressCommand[key])
+            label_entry.insert(0, self.pressCommand[key].description)
             label_entry.grid(row=row, column=self.textColumn + 3, columnspan=1, rowspan=1)
             self.label_entry_list.append(label_entry)
+
+            label_patch = Canvas(self, width=patch_size, height=patch_size)
+            label_patch.pack()
+            label_patch.create_rectangle(0,0,patch_size,patch_size, fill=self.pressCommand[key].color, outline=self.pressCommand[key].color)
+            label_patch.grid(row=row, column=self.textColumn + 4, columnspan=1, rowspan=1)
+            self.label_patch_list.append(label_patch)
             # print "row: ", row
 
     def getCursorIndex(self):
