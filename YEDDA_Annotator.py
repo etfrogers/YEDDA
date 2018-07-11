@@ -442,10 +442,14 @@ class YeddaFrame(Frame):
             self.text.mark_set("matchEnd", lineStart)
             self.text.mark_set("searchLimit", lineEnd)
         while True:
-            self.text.tag_configure("insideEntityColor", background=self.insideNestEntityColor)
-            pos = self.text.search(self.inside_nest_entity_regex.pattern, "matchEnd", "searchLimit",
-                                   count=countVar, regexp=True)
+            self.text.tag_configure("insideEntityColor", background=self.overlapped_tag_color)
+            pos = self.text.search(self.force_newline_matching(self.overlapped_tags_regex.pattern),
+                                   "matchEnd", "searchLimit", count=countVar, regexp=True)
             if pos == "":
+                break
+            if self.tag_regex.search(match.group(0)):
+                # overlapped_tags_regex matches outer overalapped tags, so discard any that also have a
+                # matched tag inside
                 break
             self.text.mark_set("matchStart", pos)
             self.text.mark_set("matchEnd", "%s+%sc" % (pos, countVar.get()))
