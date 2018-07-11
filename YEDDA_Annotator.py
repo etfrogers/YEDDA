@@ -109,7 +109,8 @@ class YeddaFrame(Frame):
         quit_button = Button(self, text="Quit", command=self.quit)
         quit_button.grid(row=6, column=self.textColumn + 1, pady=4)
 
-        self.cursorName = Label(self, text="Cursor: ", foreground="black", font=(self.textFontStyle, 14, self.fontWeight))
+        self.cursorName = Label(self, text="Cursor: ", foreground="black",
+                                font=(self.textFontStyle, 14, self.fontWeight))
         self.cursorName.grid(row=9, column=self.textColumn + 1, pady=4)
         self.cursorIndex = Label(self, text=("row: %s\ncol: %s" % (0, 0)), foreground="red",
                                  font=(self.textFontStyle, 14, self.fontWeight))
@@ -273,7 +274,7 @@ class YeddaFrame(Frame):
                 selected_string = new_string
                 # cursor_index = "%s - %sc" % (cursor_index, str(len(new_string_list[1])+4))
                 cursor_index = cursor_index.split('.')[0] + "." + str(
-                    int(cursor_index.split('.')[1]) - (len(tag_name)*2 + 5))
+                    int(cursor_index.split('.')[1]) - (len(tag_name) * 2 + 5))
             afterEntity_content = followHalf_content[len(selected_string):]
 
             if command == "q":
@@ -306,7 +307,7 @@ class YeddaFrame(Frame):
                 line_after_entity = line[matched_span[1]:]
                 selected_string = new_string
                 entity_content = selected_string
-                cursor_index = line_id + '.' + str(int(matched_span[1]) - (len(old_entity_type)*2 + 5))
+                cursor_index = line_id + '.' + str(int(matched_span[1]) - (len(old_entity_type) * 2 + 5))
                 if command == "q":
                     print 'q: remove entity label'
                 elif command == 'y':
@@ -316,7 +317,8 @@ class YeddaFrame(Frame):
                 else:
                     if len(selected_string) > 0:
                         if command in self.tag_dict:
-                            entity_content, cursor_index = self.add_tag_around_string(selected_string, command, cursor_index)
+                            entity_content, cursor_index = self.add_tag_around_string(selected_string, command,
+                                                                                      cursor_index)
                         else:
                             return
                 line_before_entity += entity_content
@@ -464,28 +466,28 @@ class YeddaFrame(Frame):
     def distinct_colors():
         # Color list taken from https://sashat.me/2017/01/11/list-of-20-simple-distinct-colors/
         color_string = \
-        '''Red	#e6194b	(230, 25, 75)	(0, 100, 66, 0)
-        Green	#3cb44b	(60, 180, 75)	(75, 0, 100, 0)
-        Yellow	#ffe119	(255, 225, 25)	(0, 25, 95, 0)
-        Blue	#0082c8	(0, 130, 200)	(100, 35, 0, 0)
-        Orange	#f58231	(245, 130, 48)	(0, 60, 92, 0)
-        Purple	#911eb4	(145, 30, 180)	(35, 70, 0, 0)
-        Cyan	#46f0f0	(70, 240, 240)	(70, 0, 0, 0)
-        Magenta	#f032e6	(240, 50, 230)	(0, 100, 0, 0)
-        Lime	#d2f53c	(210, 245, 60)	(35, 0, 100, 0)
-        Pink	#fabebe	(250, 190, 190)	(0, 30, 15, 0)
-        Teal	#008080	(0, 128, 128)	(100, 0, 0, 50)
-        Lavender	#e6beff	(230, 190, 255)	(10, 25, 0, 0)
-        Brown	#aa6e28	(170, 110, 40)	(0, 35, 75, 33)
-        Beige	#fffac8	(255, 250, 200)	(5, 10, 30, 0)
-        Maroon	#800000	(128, 0, 0)	(0, 100, 100, 50)
-        Mint	#aaffc3	(170, 255, 195)	(33, 0, 23, 0)
-        Olive	#808000	(128, 128, 0)	(0, 0, 100, 50)
-        Coral	#ffd8b1	(255, 215, 180)	(0, 15, 30, 0)
-        Navy	#000080	(0, 0, 128)	(100, 100, 0, 50)
-        Grey	#808080	(128, 128, 128)	(0, 0, 0, 50)
-        White	#FFFFFF	(255, 255, 255)	(0, 0, 0, 0)
-        Black	#000000	(0, 0, 0)	(0, 0, 0, 100)'''
+            '''Red	#e6194b	(230, 25, 75)	(0, 100, 66, 0)
+            Green	#3cb44b	(60, 180, 75)	(75, 0, 100, 0)
+            Yellow	#ffe119	(255, 225, 25)	(0, 25, 95, 0)
+            Blue	#0082c8	(0, 130, 200)	(100, 35, 0, 0)
+            Orange	#f58231	(245, 130, 48)	(0, 60, 92, 0)
+            Purple	#911eb4	(145, 30, 180)	(35, 70, 0, 0)
+            Cyan	#46f0f0	(70, 240, 240)	(70, 0, 0, 0)
+            Magenta	#f032e6	(240, 50, 230)	(0, 100, 0, 0)
+            Lime	#d2f53c	(210, 245, 60)	(35, 0, 100, 0)
+            Pink	#fabebe	(250, 190, 190)	(0, 30, 15, 0)
+            Teal	#008080	(0, 128, 128)	(100, 0, 0, 50)
+            Lavender	#e6beff	(230, 190, 255)	(10, 25, 0, 0)
+            Brown	#aa6e28	(170, 110, 40)	(0, 35, 75, 33)
+            Beige	#fffac8	(255, 250, 200)	(5, 10, 30, 0)
+            Maroon	#800000	(128, 0, 0)	(0, 100, 100, 50)
+            Mint	#aaffc3	(170, 255, 195)	(33, 0, 23, 0)
+            Olive	#808000	(128, 128, 0)	(0, 0, 100, 50)
+            Coral	#ffd8b1	(255, 215, 180)	(0, 15, 30, 0)
+            Navy	#000080	(0, 0, 128)	(100, 100, 0, 50)
+            Grey	#808080	(128, 128, 128)	(0, 0, 0, 50)
+            White	#FFFFFF	(255, 255, 255)	(0, 0, 0, 0)
+            Black	#000000	(0, 0, 0)	(0, 0, 0, 100)'''
 
         # f = StringIO(color_string)
         reader = csv.reader(color_string.split('\n'), delimiter='\t')
@@ -558,7 +560,7 @@ class YeddaFrame(Frame):
         self.label_patch_list = []
         patch_size = 25
         for i, key in enumerate(sorted(self.tag_dict)):
-            row = i+1
+            row = i + 1
             # print "key: ", key, "  command: ", self.tag_dict[key]
             shortcut_label = Label(self, text=key.lower() + ": ", foreground=label_color,
                                    font=(self.textFontStyle, label_font_size, self.fontWeight))
