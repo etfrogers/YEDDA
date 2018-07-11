@@ -408,6 +408,7 @@ class YeddaFrame(Frame):
             self.text.mark_set("matchStart", lineStart)
             self.text.mark_set("matchEnd", lineStart)
             self.text.mark_set("searchLimit", lineEnd)
+        tag_locations = []
         while True:
             pos = self.text.search(self.force_newline_matching(self.tag_regex.pattern),
                                    "matchEnd", "searchLimit", count=countVar, regexp=True)
@@ -443,18 +444,21 @@ class YeddaFrame(Frame):
             self.text.mark_set("searchLimit", lineEnd)
         while True:
             self.text.tag_configure("insideEntityColor", background=self.overlapped_tag_color)
-            pos = self.text.search(self.force_newline_matching(self.overlapped_tags_regex.pattern),
-                                   "matchEnd", "searchLimit", count=countVar, regexp=True)
-            if pos == "":
+            text_to_search = self.text.get("matchStart", "searchLimit")
+            match = self.overlapped_tags_regex.search(text_to_search)
+            if match is None:
                 break
-            if self.tag_regex.search(match.group(0)):
+            pos = pos_to_tk_coords(match.span()[0], text_to_search)
+            self.text.mark_set("matchStart", pos)
+            if self.tag_regex.search(match.group(1)):
                 # overlapped_tags_regex matches outer overalapped tags, so discard any that also have a
                 # matched tag inside
-                break
-            self.text.mark_set("matchStart", pos)
-            self.text.mark_set("matchEnd", "%s+%sc" % (pos, countVar.get()))
+                continue
+            countVar = match.span()[1] - match.span()[0]
+
+            self.text.mark_set("matchEnd", "%s+%sc" % (pos, str(countVar)))
             first_pos = "%s + %sc" % (pos, 2)
-            last_pos = "%s + %sc" % (pos, str(int(countVar.get()) - 1))
+            last_pos = "%s + %sc" % (pos, str(countVar - 1))
             self.text.tag_add("insideEntityColor", first_pos, last_pos)
 
     @staticmethod
@@ -588,6 +592,26 @@ class YeddaFrame(Frame):
         index = description_list.index(tag_description)
         key = self.tag_dict.keys()[index]
         return key
+
+
+def pos_to_tk_coords(pos, content):
+    content_list = content.split('\n')
+    line_lengths = [len(l)+1 for l in content_list]
+    line_lengths[-1] -= 1  # remove line extension for trailing newline
+    cum_length = list(cumsum(line_lengths))
+    line = 0
+    while line < len(cum_length) and cum_length[line] <= pos:
+        line += 1
+    line -= 1
+    col = pos - cum_length[line]
+    return '%d.%d' % (line + 1, col)  # line + 1 as python is zero indexed, but tk is 1 indexed
+
+
+def cumsum(lis):
+    total = 0
+    for x in lis:
+        total += x
+        yield total
 
 
 def main():
