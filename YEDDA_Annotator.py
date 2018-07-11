@@ -161,7 +161,7 @@ class YeddaFrame(Frame):
             firstSelection_index = self.text.index(SEL_FIRST)
             cursor_index = self.text.index(SEL_LAST)
             content = self.text.get('1.0', "end-1c").encode('utf-8')
-            self.writeFile(self.fileName, content, cursor_index)
+            self.write_file(self.fileName, content, cursor_index)
         except TclError:
             pass
 
@@ -228,7 +228,7 @@ class YeddaFrame(Frame):
             # print "history content: ", historyContent
             cursorIndex = historyCondition[1]
             # print "get history cursor: ", cursorIndex
-            self.writeFile(self.fileName, historyContent, cursorIndex)
+            self.write_file(self.fileName, historyContent, cursorIndex)
         else:
             print "History is empty!"
         self.text.insert(INSERT, 'p')  # add a word as pad for key release delete
@@ -276,7 +276,7 @@ class YeddaFrame(Frame):
                     selected_string, cursor_index = self.add_tag_around_string(selected_string, command, cursor_index)
             content = aboveHalf_content + selected_string + afterEntity_content
             content = content.encode('utf-8')
-            self.writeFile(self.fileName, content, cursor_index)
+            self.write_file(self.fileName, content, cursor_index)
         except TclError:
             # no text selected - use item under cursor
             cursor_index = self.text.index(INSERT)
@@ -325,7 +325,7 @@ class YeddaFrame(Frame):
 
             content = aboveHalf_content + followHalf_content
             content = content.encode('utf-8')
-            self.writeFile(self.fileName, content, cursor_index)
+            self.write_file(self.fileName, content, cursor_index)
 
     def deleteTextInput(self, event):
         if self.debug:
@@ -341,7 +341,7 @@ class YeddaFrame(Frame):
         if len(get_input) > 0:
             followHalf_content = followHalf_content.replace(get_input, '', 1)
         content = aboveHalf_content + followHalf_content
-        self.writeFile(self.fileName, content, last_insert)
+        self.write_file(self.fileName, content, last_insert)
 
     def add_tag_around_string(self, content, replaceType, cursor_index):
         if replaceType in self.pressCommand:
@@ -355,22 +355,19 @@ class YeddaFrame(Frame):
             return content, cursor_index
         return new_content, newcursor_index
 
-    def writeFile(self, fileName, content, newcursor_index):
+    def write_file(self, fileName, content, newcursor_index):
         if self.debug:
-            print "Action track: writeFile"
+            print "Action track: write_file"
 
         if len(fileName) > 0:
             if ".ann" in fileName:
                 new_name = fileName
-                ann_file = open(new_name, 'w')
-                ann_file.write(content)
-                ann_file.close()
             else:
                 new_name = fileName + '.ann'
-                ann_file = open(new_name, 'w')
+            with open(new_name, 'w') as ann_file:
                 ann_file.write(content)
-                ann_file.close()
-                # print "Writen to new file: ", new_name
+
+            # print "Writen to new file: ", new_name
             self.autoLoadNewFile(new_name, newcursor_index)
             # self.generateSequenceFile()
         else:
