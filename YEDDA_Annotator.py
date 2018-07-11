@@ -65,10 +65,10 @@ class YeddaFrame(Frame):
         self.keep_recommend = True
 
         self.configFile = "config.pkl"
-        self.entity_regex = re.compile(r'<([\w-]+?)>(.*?)</\1>', flags=re.DOTALL)
-        self.inside_nest_entity_regex = re.compile(r'\[@\[@(?!\[@).*?#.*?\*\]#')
+        self.tag_regex = re.compile(r'<([\w-]+?)>(.*?)</\1>', flags=re.DOTALL)
+        self.overlapped_tags_regex = re.compile(r'<([\w-]+?)>(.*?)</(?!\1)[\w]+?>', flags=re.DOTALL)
         # configure color
-        self.insideNestEntityColor = "light slate blue"
+        self.overlapped_tag_color = "gray"
         self.selectColor = 'gray'
         self.textFontStyle = "Times"
         self.fontWeight = "normal"
@@ -260,7 +260,7 @@ class YeddaFrame(Frame):
             aboveHalf_content = self.text.get('1.0', firstSelection_index)
             followHalf_content = self.text.get(firstSelection_index, "end-1c")
             selected_string = self.text.selection_get()
-            match = self.entity_regex.match(selected_string)
+            match = self.tag_regex.match(selected_string)
             if match is not None:
                 # if have selected entity
                 new_string = match.group(2)
@@ -290,7 +290,7 @@ class YeddaFrame(Frame):
             matched_span = (-1, -1)
             line_before_entity = line
             line_after_entity = ""
-            for match in self.entity_regex.finditer(line):
+            for match in self.tag_regex.finditer(line):
                 if match.span()[0] <= int(column_id) & int(column_id) <= match.span()[1]:
                     matched_span = match.span()
                     matched_groups = match.groups()
@@ -409,7 +409,7 @@ class YeddaFrame(Frame):
             self.text.mark_set("matchEnd", lineStart)
             self.text.mark_set("searchLimit", lineEnd)
         while True:
-            pos = self.text.search(self.force_newline_matching(self.entity_regex.pattern),
+            pos = self.text.search(self.force_newline_matching(self.tag_regex.pattern),
                                    "matchEnd", "searchLimit", count=countVar, regexp=True)
 
             if pos == "":
@@ -424,7 +424,7 @@ class YeddaFrame(Frame):
 
             # we need to find out which Tag this is to get the color to use
             found_text = self.text.get(first_pos, last_pos)
-            match = self.entity_regex.match(found_text)
+            match = self.tag_regex.match(found_text)
             tag_description = match.group(1)
             tag_command = self.get_command_from_description(tag_description)
             color = self.tag_dict[tag_command].color
