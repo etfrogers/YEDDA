@@ -143,7 +143,7 @@ class YeddaFrame(Frame):
 
         # cursor index show with the left click
 
-    def singleLeftClick(self, event):
+    def singleLeftClick(self, _):
         if self.debug:
             print "Action Track: singleLeftClick"
         cursor_index = self.text.index(INSERT)
@@ -152,21 +152,17 @@ class YeddaFrame(Frame):
         self.cursorIndex.config(text=cursor_text)
 
     # TODO: select entity by double left click
-    def doubleLeftClick(self, event):
+    def doubleLeftClick(self, _):
         if self.debug:
             print "Action Track: doubleLeftClick"
         pass
-        # cursor_index = self.text.index(INSERT)
-        # start_index = ("%s - %sc" % (cursor_index, 5))
-        # end_index = ("%s + %sc" % (cursor_index, 5))
-        # self.text.tag_add('SEL', '1.0',"end-1c")
 
     # Disable right click default copy selection behaviour
-    def rightClick(self, event):
+    def rightClick(self, _):
         if self.debug:
             print "Action Track: rightClick"
         try:
-            firstSelection_index = self.text.index(SEL_FIRST)
+            _ = self.text.index(SEL_FIRST)
             cursor_index = self.text.index(SEL_LAST)
             content = self.text.get('1.0', "end-1c").encode('utf-8')
             self.write_file(self.fileName, content, cursor_index)
@@ -174,10 +170,10 @@ class YeddaFrame(Frame):
             pass
 
     def onOpen(self):
-        ftypes = [('all files', '.*'), ('text files', '.txt'), ('ann files', '.ann')]
-        dlg = tkFileDialog.Open(self, filetypes=ftypes)
+        file_types = [('all files', '.*'), ('text files', '.txt'), ('ann files', '.ann')]
+        dlg = tkFileDialog.Open(self, filetypes=file_types)
         # file_opt = options =  {}
-        # options['filetypes'] = [('all files', '.*'), ('text files', '.txt')]
+        # options['file_types'] = [('all files', '.*'), ('text files', '.txt')]
         # dlg = tkFileDialog.askopenfilename(**options)
         fl = dlg.show()
         if fl != '':
@@ -226,7 +222,7 @@ class YeddaFrame(Frame):
         # self.deleteTextInput()
         return press_key
 
-    def go_back_in_history(self, event):
+    def go_back_in_history(self, _):
         if self.debug:
             print "Action Track: go_back_in_history"
         if len(self.history) > 0:
@@ -241,7 +237,7 @@ class YeddaFrame(Frame):
             print "History is empty!"
         self.text.insert(INSERT, 'p')  # add a word as pad for key release delete
 
-    def keepCurrent(self, event):
+    def keepCurrent(self, _):
         if self.debug:
             print "Action Track: keepCurrent"
         print("keep current, insert:%s" % INSERT)
@@ -257,7 +253,6 @@ class YeddaFrame(Frame):
     def add_remove_tag(self, command):
         if self.debug:
             print "Action Track: add_remove_tag"
-        content = self.getText()
         print("Command:" + command)
         try:
             firstSelection_index = self.text.index(SEL_FIRST)
@@ -336,7 +331,7 @@ class YeddaFrame(Frame):
             content = content.encode('utf-8')
             self.write_file(self.fileName, content, cursor_index)
 
-    def deleteTextInput(self, event):
+    def deleteTextInput(self, _):
         if self.debug:
             print "Action Track: deleteTextInput"
         get_insert = self.text.index(INSERT)
@@ -507,7 +502,7 @@ class YeddaFrame(Frame):
         currentList.append(cursorPosition)
         self.history.append(currentList)
 
-    def pushToHistoryEvent(self, event):
+    def pushToHistoryEvent(self, _):
         if self.debug:
             print "Action Track: pushToHistoryEvent"
         currentList = []
@@ -575,7 +570,8 @@ class YeddaFrame(Frame):
 
             label_patch = Canvas(self, width=patch_size, height=patch_size)
             label_patch.pack()
-            label_patch.create_rectangle(0, 0, patch_size, patch_size, fill=self.tag_dict[key].color, outline=self.tag_dict[key].color)
+            label_patch.create_rectangle(0, 0, patch_size, patch_size, fill=self.tag_dict[key].color,
+                                         outline=self.tag_dict[key].color)
             label_patch.grid(row=row, column=self.textColumn + 4, columnspan=1, rowspan=1)
             self.label_patch_list.append(label_patch)
             # print "row: ", row
