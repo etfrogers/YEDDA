@@ -37,27 +37,27 @@ class YeddaFrame(Frame):
         self.history = deque(maxlen=20)
         self.currentContent = deque(maxlen=1)
         colors = self.distinct_colors()
-        self.pressCommand = {'a': Tag("Tag1", colors[0].hex),
-                             'b': Tag("Tag2", colors[1].hex),
-                             'c': Tag("Tag3", colors[2].hex),
-                             'd': Tag("Tag4", colors[3].hex),
-                             'e': Tag("Tag5", colors[4].hex),
-                             'f': Tag("Tag6", colors[5].hex),
-                             'g': Tag("Tag7", colors[6].hex),
-                             'h': Tag("Tag8", colors[7].hex),
-                             'i': Tag("Tag9", colors[8].hex),
-                             'j': Tag("Tag10", colors[9].hex),
-                             'k': Tag("Tag11", colors[10].hex),
-                             'l': Tag("Tag12", colors[11].hex)
-                             }
+        self.tag_dict = {'a': Tag("Tag1", colors[0].hex),
+                         'b': Tag("Tag2", colors[1].hex),
+                         'c': Tag("Tag3", colors[2].hex),
+                         'd': Tag("Tag4", colors[3].hex),
+                         'e': Tag("Tag5", colors[4].hex),
+                         'f': Tag("Tag6", colors[5].hex),
+                         'g': Tag("Tag7", colors[6].hex),
+                         'h': Tag("Tag8", colors[7].hex),
+                         'i': Tag("Tag9", colors[8].hex),
+                         'j': Tag("Tag10", colors[9].hex),
+                         'k': Tag("Tag11", colors[10].hex),
+                         'l': Tag("Tag12", colors[11].hex)
+                         }
         self.allKey = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
         self.controlCommand = {'q': "unTag", 'ctrl+z': 'undo'}
         self.label_entry_list = []
         self.shortcut_label_list = []
         self.label_patch_list = []
         # default GUI display parameter
-        if len(self.pressCommand) > 20:
-            self.textRow = len(self.pressCommand)
+        if len(self.tag_dict) > 20:
+            self.textRow = len(self.tag_dict)
         else:
             self.textRow = 12
         self.textColumn = 5
@@ -68,9 +68,8 @@ class YeddaFrame(Frame):
         self.entity_regex = re.compile(r'<([\w-]+?)>(.*?)</\1>', flags=re.DOTALL)
         self.inside_nest_entity_regex = re.compile(r'\[@\[@(?!\[@).*?#.*?\*\]#')
         # configure color
-        self.entityColor = "SkyBlue1"
         self.insideNestEntityColor = "light slate blue"
-        self.selectColor = 'light salmon'
+        self.selectColor = 'gray'
         self.textFontStyle = "Times"
         self.fontWeight = "normal"
         self.initUI()
@@ -116,7 +115,7 @@ class YeddaFrame(Frame):
                                  font=(self.textFontStyle, 14, self.fontWeight))
         self.cursorIndex.grid(row=10, column=self.textColumn + 1, pady=4)
 
-        # for press_key in self.pressCommand.keys():
+        # for press_key in self.tag_dict.keys():
         for idx in range(0, len(self.allKey)):
             press_key = self.allKey[idx]
 
@@ -312,11 +311,11 @@ class YeddaFrame(Frame):
                     print 'q: remove entity label'
                 elif command == 'y':
                     print "y: comfirm recommend label"
-                    old_key = self.pressCommand.keys()[self.pressCommand.values().index(old_entity_type)]
+                    old_key = self.tag_dict.keys()[self.tag_dict.values().index(old_entity_type)]
                     entity_content, cursor_index = self.add_tag_around_string(selected_string, old_key, cursor_index)
                 else:
                     if len(selected_string) > 0:
-                        if command in self.pressCommand:
+                        if command in self.tag_dict:
                             entity_content, cursor_index = self.add_tag_around_string(selected_string, command, cursor_index)
                         else:
                             return
@@ -352,11 +351,11 @@ class YeddaFrame(Frame):
         self.write_file(self.fileName, content, last_insert)
 
     def add_tag_around_string(self, content, replaceType, cursor_index):
-        if replaceType in self.pressCommand:
-            new_content = "<" + self.pressCommand[replaceType] + ">" + content + \
-                          "</" + self.pressCommand[replaceType] + ">"
+        if replaceType in self.tag_dict:
+            new_content = "<" + self.tag_dict[replaceType].description + ">" + content + \
+                          "</" + self.tag_dict[replaceType].description + ">"
             newcursor_index = cursor_index.split('.')[0] + "." + str(
-                int(cursor_index.split('.')[1]) + len(self.pressCommand[replaceType]) + 5)
+                int(cursor_index.split('.')[1]) + len(self.tag_dict[replaceType]) + 5)
         else:
             print "Invalid command!"
             print "cursor index: ", self.text.index(INSERT)
@@ -413,9 +412,9 @@ class YeddaFrame(Frame):
             self.text.mark_set("matchEnd", lineStart)
             self.text.mark_set("searchLimit", lineEnd)
         while True:
-            self.text.tag_configure("category", background=self.entityColor)
             pos = self.text.search(self.force_newline_matching(self.entity_regex.pattern),
                                    "matchEnd", "searchLimit", count=countVar, regexp=True)
+
             if pos == "":
                 break
             self.text.mark_set("matchStart", pos)
@@ -426,7 +425,15 @@ class YeddaFrame(Frame):
             first_pos = pos
             last_pos = "%s + %sc" % (pos, countVar.get())
 
-            self.text.tag_add("category", first_pos, last_pos)
+            # we need to find out which Tag this is to get the color to use
+            found_text = self.text.get(first_pos, last_pos)
+            match = self.entity_regex.match(found_text)
+            tag_description = match.group(1)
+            tag_command = self.get_command_from_description(tag_description)
+            color = self.tag_dict[tag_command].color
+            self.text.tag_configure(tag_description, background=color)
+
+            self.text.tag_add(tag_description, first_pos, last_pos)
 
         # color the most inside span for nested span, scan from begin to end again
         if self.reprocess_whole_file:
@@ -517,19 +524,19 @@ class YeddaFrame(Frame):
         new_dict = {}
         listLength = len(self.label_entry_list)
         delete_num = 0
-        for key in sorted(self.pressCommand):
+        for key in sorted(self.tag_dict):
             label = self.label_entry_list[seq].get()
             if len(label) > 0:
                 new_dict[key] = label
             else:
                 delete_num += 1
             seq += 1
-        self.pressCommand = new_dict
+        self.tag_dict = new_dict
         for idx in range(1, delete_num + 1):
             self.label_entry_list[listLength - idx].delete(0, END)
             self.shortcut_label_list[listLength - idx].config(text="NON= ")
         with open(self.configFile, 'wb') as fp:
-            pickle.dump(self.pressCommand, fp)
+            pickle.dump(self.tag_dict, fp)
         self.show_shortcut_map()
         tkMessageBox.showinfo("Remap Notification",
                               "Shortcut map has been updated!\n\nConfigure file has been saved in File:" +
@@ -541,7 +548,7 @@ class YeddaFrame(Frame):
         label_font_size = 14
         if os.path.isfile(self.configFile):
             with open(self.configFile, 'rb') as fp:
-                self.pressCommand = pickle.load(fp)
+                self.tag_dict = pickle.load(fp)
 
         mapLabel = Label(self, text="Tags", foreground=label_color,
                          font=(self.textFontStyle, label_font_size, self.fontWeight))
@@ -550,9 +557,9 @@ class YeddaFrame(Frame):
         self.shortcut_label_list = []
         self.label_patch_list = []
         patch_size = 25
-        for i, key in enumerate(sorted(self.pressCommand)):
+        for i, key in enumerate(sorted(self.tag_dict)):
             row = i+1
-            # print "key: ", key, "  command: ", self.pressCommand[key]
+            # print "key: ", key, "  command: ", self.tag_dict[key]
             shortcut_label = Label(self, text=key.lower() + ": ", foreground=label_color,
                                    font=(self.textFontStyle, label_font_size, self.fontWeight))
             shortcut_label.grid(row=row, column=self.textColumn + 2, columnspan=1, rowspan=1, padx=0)
@@ -560,19 +567,25 @@ class YeddaFrame(Frame):
 
             label_entry = Entry(self, foreground=label_color,
                                 font=(self.textFontStyle, label_font_size, self.fontWeight))
-            label_entry.insert(0, self.pressCommand[key].description)
+            label_entry.insert(0, self.tag_dict[key].description)
             label_entry.grid(row=row, column=self.textColumn + 3, columnspan=1, rowspan=1)
             self.label_entry_list.append(label_entry)
 
             label_patch = Canvas(self, width=patch_size, height=patch_size)
             label_patch.pack()
-            label_patch.create_rectangle(0,0,patch_size,patch_size, fill=self.pressCommand[key].color, outline=self.pressCommand[key].color)
+            label_patch.create_rectangle(0, 0, patch_size, patch_size, fill=self.tag_dict[key].color, outline=self.tag_dict[key].color)
             label_patch.grid(row=row, column=self.textColumn + 4, columnspan=1, rowspan=1)
             self.label_patch_list.append(label_patch)
             # print "row: ", row
 
     def getCursorIndex(self):
         return self.text.index(INSERT)
+
+    def get_command_from_description(self, tag_description):
+        description_list = [v.description for v in self.tag_dict.values()]
+        index = description_list.index(tag_description)
+        key = self.tag_dict.keys()[index]
+        return key
 
 
 def main():
