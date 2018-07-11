@@ -430,36 +430,20 @@ class YeddaFrame(Frame):
             tag_command = self.get_command_from_description(tag_description)
             color = self.tag_dict[tag_command].color
             self.text.tag_configure(tag_description, background=color)
-
+            tag_locations.append((first_pos, last_pos))
             self.text.tag_add(tag_description, first_pos, last_pos)
 
-        # color the most inside span for nested span, scan from begin to end again
-        if self.reprocess_whole_file:
-            self.text.mark_set("matchStart", "1.0")
-            self.text.mark_set("matchEnd", "1.0")
-            self.text.mark_set("searchLimit", 'end-1c')
-        else:
-            self.text.mark_set("matchStart", lineStart)
-            self.text.mark_set("matchEnd", lineStart)
-            self.text.mark_set("searchLimit", lineEnd)
-        while True:
-            self.text.tag_configure("insideEntityColor", background=self.overlapped_tag_color)
-            text_to_search = self.text.get("matchStart", "searchLimit")
-            match = self.overlapped_tags_regex.search(text_to_search)
-            if match is None:
-                break
-            pos = pos_to_tk_coords(match.span()[0], text_to_search)
-            self.text.mark_set("matchStart", pos)
-            if self.tag_regex.search(match.group(1)):
-                # overlapped_tags_regex matches outer overalapped tags, so discard any that also have a
-                # matched tag inside
-                continue
-            countVar = match.span()[1] - match.span()[0]
+        self.text.tag_delete("overlap")
+        self.text.tag_configure("overlap", background=self.overlapped_tag_color)
+        for i, loc in enumerate(tag_locations[0:-1]):
+            # note tags are put in list in order of start position
+            end_pos = loc[1]
+            start_pos = tag_locations[i + 1][0]
+            overlap_text = self.text.get(start_pos, end_pos)
+            if overlap_text != '':
+                self.text.tag_add("overlap", start_pos, end_pos)
 
-            self.text.mark_set("matchEnd", "%s+%sc" % (pos, str(countVar)))
-            first_pos = "%s + %sc" % (pos, 2)
-            last_pos = "%s + %sc" % (pos, str(countVar - 1))
-            self.text.tag_add("insideEntityColor", first_pos, last_pos)
+        self.text.tag_raise("overlap")
 
     @staticmethod
     def force_newline_matching(pattern):
@@ -592,26 +576,6 @@ class YeddaFrame(Frame):
         index = description_list.index(tag_description)
         key = self.tag_dict.keys()[index]
         return key
-
-
-def pos_to_tk_coords(pos, content):
-    content_list = content.split('\n')
-    line_lengths = [len(l)+1 for l in content_list]
-    line_lengths[-1] -= 1  # remove line extension for trailing newline
-    cum_length = list(cumsum(line_lengths))
-    line = 0
-    while line < len(cum_length) and cum_length[line] <= pos:
-        line += 1
-    line -= 1
-    col = pos - cum_length[line]
-    return '%d.%d' % (line + 1, col)  # line + 1 as python is zero indexed, but tk is 1 indexed
-
-
-def cumsum(lis):
-    total = 0
-    for x in lis:
-        total += x
-        yield total
 
 
 def main():
