@@ -33,7 +33,6 @@ class YeddaFrame(Frame):
         self.fileName = ""
         self.debug = False
         self.reprocess_whole_file = True
-        self.recommendFlag = False
         self.history = deque(maxlen=20)
         self.currentContent = deque(maxlen=1)
         colors = self.distinct_colors()
