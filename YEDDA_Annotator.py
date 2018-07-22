@@ -64,7 +64,7 @@ class YeddaFrame(Frame):
         self.onlyNP = False  # for exporting sequence 
         self.keep_recommend = True
 
-        self.configFile = "config.pkl"
+        self.config_file = "config.pkl"
         self.tag_regex = re.compile(r'<([\w-]+?)>(.*?)</\1>', flags=re.DOTALL)
         self.overlapped_tags_regex = re.compile(r'<([\w-]+?)>(.*?)</(?!\1)[\w]+?>', flags=re.DOTALL)
         # configure color
@@ -524,20 +524,26 @@ class YeddaFrame(Frame):
         for idx in range(1, delete_num + 1):
             self.label_entry_list[listLength - idx].delete(0, END)
             self.shortcut_label_list[listLength - idx].config(text="NON= ")
-        with open(self.configFile, 'wb') as fp:
-            pickle.dump(self.tag_dict, fp)
+        self.save_config()
         self.show_shortcut_map()
         tkMessageBox.showinfo("Remap Notification",
                               "Shortcut map has been updated!\n\nConfigure file has been saved in File:" +
-                              self.configFile)
+                              self.config_file)
+
+    def save_config(self):
+        with open(self.config_file, 'wb') as fp:
+            pickle.dump(self.tag_dict, fp)
+
+    def read_config(self):
+        if os.path.isfile(self.config_file):
+            with open(self.config_file, 'rb') as fp:
+                self.tag_dict = pickle.load(fp)
 
     # show shortcut map
     def show_shortcut_map(self):
         label_color = "black"
         label_font_size = 14
-        if os.path.isfile(self.configFile):
-            with open(self.configFile, 'rb') as fp:
-                self.tag_dict = pickle.load(fp)
+        self.read_config()
 
         mapLabel = Label(self, text="Tags", foreground=label_color,
                          font=(self.textFontStyle, label_font_size, self.fontWeight))
