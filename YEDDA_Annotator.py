@@ -507,17 +507,15 @@ class YeddaFrame(Frame):
         if self.debug:
             print "Action Track: do_remap_of_shortcuts"
         seq = 0
-        new_dict = {}
         list_length = len(self.label_entry_list)
         delete_num = 0
         for key in sorted(self.tag_dict):
             label = self.label_entry_list[seq].get()
             if len(label) > 0:
-                new_dict[key] = label
+                self.tag_dict[key] = Tag(label, self.tag_dict[key].color)
             else:
                 delete_num += 1
             seq += 1
-        self.tag_dict = new_dict
         for idx in range(1, delete_num + 1):
             self.label_entry_list[list_length - idx].delete(0, END)
             self.shortcut_label_list[list_length - idx].config(text="NON= ")
