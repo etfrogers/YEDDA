@@ -22,19 +22,17 @@ Tag = namedtuple('Tag', ['description', 'color'])
 Color = namedtuple('Color', ['name', 'hex', 'rgb', 'cmyk'])
 
 
-# noinspection PyPep8Naming
 class YeddaFrame(Frame):
     # noinspection PyMissingConstructor
     def __init__(self, parent):
         Frame.__init__(self, parent)
-        self.Version = "YEDDA-V1.0 Annotator"
-        self.OS = platform.system().lower()
+        self.version = "YEDDA-V1.0 Annotator"
+        self.os = platform.system().lower()
         self.parent = parent
-        self.fileName = ""
+        self.file_name = ""
         self.debug = False
         self.reprocess_whole_file = True
         self.history = deque(maxlen=20)
-        self.currentContent = deque(maxlen=1)
         colors = self.distinct_colors()
         self.tag_dict = {'a': Tag("Tag1", colors[0].hex),
                          'b': Tag("Tag2", colors[1].hex),
@@ -49,18 +47,17 @@ class YeddaFrame(Frame):
                          'k': Tag("Tag11", colors[10].hex),
                          'l': Tag("Tag12", colors[11].hex)
                          }
-        self.allKey = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        self.all_key = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
         self.controlCommand = {'q': "unTag", 'ctrl+z': 'undo'}
         self.label_entry_list = []
         self.shortcut_label_list = []
         self.label_patch_list = []
         # default GUI display parameter
         if len(self.tag_dict) > 20:
-            self.textRow = len(self.tag_dict)
+            self.text_row = len(self.tag_dict)
         else:
-            self.textRow = 12
-        self.textColumn = 5
-        self.onlyNP = False  # for exporting sequence 
+            self.text_row = 12
+        self.text_column = 5
         self.keep_recommend = True
 
         self.config_file = "config.pkl"
@@ -68,107 +65,108 @@ class YeddaFrame(Frame):
         self.overlapped_tags_regex = re.compile(r'<([\w-]+?)>(.*?)</(?!\1)[\w]+?>', flags=re.DOTALL)
         # configure color
         self.overlapped_tag_color = "gray"
-        self.selectColor = 'gray'
-        self.textFontStyle = "Times"
-        self.fontWeight = "normal"
-        self.initUI()
+        self.select_color = 'gray'
+        self.text_font_style = "Times"
+        self.font_weight = "normal"
+        self.init_ui()
 
     # noinspection PyAttributeOutsideInit
-    def initUI(self):
+    def init_ui(self):
 
-        self.parent.title(self.Version)
+        self.parent.title(self.version)
         self.pack(fill=BOTH, expand=True)
 
-        for idx in range(0, self.textColumn):
+        for idx in range(0, self.text_column):
             self.columnconfigure(idx, weight=2)
         # self.columnconfigure(0, weight=2)
-        self.columnconfigure(self.textColumn + 2, weight=1)
-        self.columnconfigure(self.textColumn + 4, weight=1)
+        self.columnconfigure(self.text_column + 2, weight=1)
+        self.columnconfigure(self.text_column + 4, weight=1)
         for idx in range(0, 16):
             self.rowconfigure(idx, weight=1)
 
         self.lbl = Label(self, text="File: no file is opened")
         self.lbl.grid(sticky=W, pady=4, padx=5)
-        self.fnt = tkFont.Font(family=self.textFontStyle, size=self.textRow, underline=0)
-        self.text = Text(self, font=self.fnt, selectbackground=self.selectColor)
-        self.text.grid(row=1, column=0, columnspan=self.textColumn, rowspan=self.textRow, padx=12, sticky=E + W + S + N)
+        self.fnt = tkFont.Font(family=self.text_font_style, size=self.text_row, underline=0)
+        self.text = Text(self, font=self.fnt, selectbackground=self.select_color)
+        self.text.grid(row=1, column=0, columnspan=self.text_column, rowspan=self.text_row, padx=12,
+                       sticky=E + W + S + N)
 
         self.sb = Scrollbar(self)
-        self.sb.grid(row=1, column=self.textColumn, rowspan=self.textRow, padx=0, sticky=E + W + S + N)
+        self.sb.grid(row=1, column=self.text_column, rowspan=self.text_row, padx=0, sticky=E + W + S + N)
         self.text['yscrollcommand'] = self.sb.set
         self.sb['command'] = self.text.yview
         # self.sb.pack()
 
-        open_btn = Button(self, text="Open", command=self.onOpen)
-        open_btn.grid(row=1, column=self.textColumn + 1)
+        open_btn = Button(self, text="Open", command=self.on_open)
+        open_btn.grid(row=1, column=self.text_column + 1)
 
         remap_button = Button(self, text="ReMap", command=self.do_remap_of_shortcuts)
-        remap_button.grid(row=4, column=self.textColumn + 1, pady=4)
+        remap_button.grid(row=4, column=self.text_column + 1, pady=4)
 
         quit_button = Button(self, text="Quit", command=self.quit)
-        quit_button.grid(row=6, column=self.textColumn + 1, pady=4)
+        quit_button.grid(row=6, column=self.text_column + 1, pady=4)
 
-        self.cursorName = Label(self, text="Cursor: ", foreground="black",
-                                font=(self.textFontStyle, 14, self.fontWeight))
-        self.cursorName.grid(row=9, column=self.textColumn + 1, pady=4)
-        self.cursorIndex = Label(self, text=("row: %s\ncol: %s" % (0, 0)), foreground="red",
-                                 font=(self.textFontStyle, 14, self.fontWeight))
-        self.cursorIndex.grid(row=10, column=self.textColumn + 1, pady=4)
+        cursor_name = Label(self, text="Cursor: ", foreground="black",
+                            font=(self.text_font_style, 14, self.font_weight))
+        cursor_name.grid(row=9, column=self.text_column + 1, pady=4)
+        self.cursor_index = Label(self, text=("row: %s\ncol: %s" % (0, 0)), foreground="red",
+                                  font=(self.text_font_style, 14, self.font_weight))
+        self.cursor_index.grid(row=10, column=self.text_column + 1, pady=4)
 
         # for press_key in self.tag_dict.keys():
-        for idx in range(0, len(self.allKey)):
-            press_key = self.allKey[idx]
+        for idx in range(0, len(self.all_key)):
+            press_key = self.all_key[idx]
 
-            # self.text.bind(press_key, lambda event, arg=press_key:self.textReturnEnter(event,arg))
-            self.text.bind(press_key, self.textReturnEnter)
-            simplePressKey = "<KeyRelease-" + press_key + ">"
-            self.text.bind(simplePressKey, self.deleteTextInput)
-            if self.OS != "windows":
-                controlPlusKey = "<Control-Key-" + press_key + ">"
-                self.text.bind(controlPlusKey, self.keepCurrent)
-                altPlusKey = "<Command-Key-" + press_key + ">"
-                self.text.bind(altPlusKey, self.keepCurrent)
+            # self.text.bind(press_key, lambda event, arg=press_key:self.text_return_enter(event,arg))
+            self.text.bind(press_key, self.text_return_enter)
+            simple_press_key = "<KeyRelease-" + press_key + ">"
+            self.text.bind(simple_press_key, self.delete_text_input)
+            if self.os != "windows":
+                control_plus_key = "<Control-Key-" + press_key + ">"
+                self.text.bind(control_plus_key, self.keep_current)
+                alt_plus_key = "<Command-Key-" + press_key + ">"
+                self.text.bind(alt_plus_key, self.keep_current)
 
         self.text.bind('<Control-Key-z>', self.go_back_in_history)
         # disable the default  copy behaviour when right click.
         # For MacOS, right click is button 2, other systems are button3
-        self.text.bind('<Button-2>', self.rightClick)
-        self.text.bind('<Button-3>', self.rightClick)
+        self.text.bind('<Button-2>', self.right_click)
+        self.text.bind('<Button-3>', self.right_click)
 
-        self.text.bind('<Double-Button-1>', self.doubleLeftClick)
-        self.text.bind('<ButtonRelease-1>', self.singleLeftClick)
+        self.text.bind('<Double-Button-1>', self.double_left_click)
+        self.text.bind('<ButtonRelease-1>', self.single_left_click)
 
         self.show_shortcut_map()
 
         # cursor index show with the left click
 
-    def singleLeftClick(self, _):
+    def single_left_click(self, _):
         if self.debug:
             print "Action Track: singleLeftClick"
         cursor_index = self.text.index(INSERT)
         row_column = cursor_index.split('.')
         cursor_text = ("row: %s\ncol: %s" % (row_column[0], row_column[-1]))
-        self.cursorIndex.config(text=cursor_text)
+        self.cursor_index.config(text=cursor_text)
 
     # TODO: select entity by double left click
-    def doubleLeftClick(self, _):
+    def double_left_click(self, _):
         if self.debug:
             print "Action Track: doubleLeftClick"
         pass
 
     # Disable right click default copy selection behaviour
-    def rightClick(self, _):
+    def right_click(self, _):
         if self.debug:
             print "Action Track: rightClick"
         try:
             _ = self.text.index(SEL_FIRST)
             cursor_index = self.text.index(SEL_LAST)
             content = self.text.get('1.0', "end-1c").encode('utf-8')
-            self.write_file(self.fileName, content, cursor_index)
+            self.write_file(self.file_name, content, cursor_index)
         except TclError:
             pass
 
-    def onOpen(self):
+    def on_open(self):
         file_types = [('all files', '.*'), ('text files', '.txt'), ('ann files', '.ann')]
         dlg = tkFileDialog.Open(self, filetypes=file_types)
         # file_opt = options =  {}
@@ -177,114 +175,114 @@ class YeddaFrame(Frame):
         fl = dlg.show()
         if fl != '':
             self.text.delete("1.0", END)
-            text = self.readFile(fl)
+            text = self.read_file(fl)
             self.text.insert(END, text)
-            self.setNameLabel("File: " + fl)
-            self.autoLoadNewFile(self.fileName, "1.0")
+            self.set_name_label("File: " + fl)
+            self.auto_load_new_file(self.file_name, "1.0")
             # self.setDisplay()
             # self.initAnnotate()
             self.text.mark_set(INSERT, "1.0")
-            self.setCursorLabel(self.text.index(INSERT))
+            self.set_cursor_label(self.text.index(INSERT))
 
-    def readFile(self, filename):
+    def read_file(self, filename):
         with open(filename, "rU") as f:
             text = f.read()
-        self.fileName = filename
+        self.file_name = filename
         return text
 
-    def setFont(self, value):
-        _family = self.textFontStyle
+    def set_font(self, value):
+        _family = self.text_font_style
         _size = value
-        _weight = self.fontWeight
+        _weight = self.font_weight
         _underline = 0
         fnt = tkFont.Font(family=_family, size=_size, weight=_weight, underline=_underline)
         Text(self, font=fnt)
 
-    def setNameLabel(self, new_file):
+    def set_name_label(self, new_file):
         self.lbl.config(text=new_file)
 
-    def setCursorLabel(self, cursor_index):
+    def set_cursor_label(self, cursor_index):
         if self.debug:
             print "Action Track: setCursorLabel"
         row_column = cursor_index.split('.')
         cursor_text = ("row: %s\ncol: %s" % (row_column[0], row_column[-1]))
-        self.cursorIndex.config(text=cursor_text)
+        self.cursor_index.config(text=cursor_text)
 
-    def textReturnEnter(self, event):
+    def text_return_enter(self, event):
         press_key = event.char
         if self.debug:
-            print "Action Track: textReturnEnter"
-        self.pushToHistory()
+            print "Action Track: text_return_enter"
+        self.push_to_history()
         print "event: ", press_key
         # content = self.text.get()
         self.add_remove_tag(press_key.lower())
-        # self.deleteTextInput()
+        # self.delete_text_input()
         return press_key
 
     def go_back_in_history(self, _):
         if self.debug:
             print "Action Track: go_back_in_history"
         if len(self.history) > 0:
-            historyCondition = self.history.pop()
-            # print "history condition: ", historyCondition
-            historyContent = historyCondition[0]
-            # print "history content: ", historyContent
-            cursorIndex = historyCondition[1]
-            # print "get history cursor: ", cursorIndex
-            self.write_file(self.fileName, historyContent, cursorIndex)
+            history_condition = self.history.pop()
+            # print "history condition: ", history_condition
+            history_content = history_condition[0]
+            # print "history content: ", history_content
+            cursor_index = history_condition[1]
+            # print "get history cursor: ", cursor_index
+            self.write_file(self.file_name, history_content, cursor_index)
         else:
             print "History is empty!"
         self.text.insert(INSERT, 'p')  # add a word as pad for key release delete
 
-    def keepCurrent(self, _):
+    def keep_current(self, _):
         if self.debug:
-            print "Action Track: keepCurrent"
+            print "Action Track: keep_current"
         print("keep current, insert:%s" % INSERT)
         print "before:", self.text.index(INSERT)
         self.text.insert(INSERT, 'p')
         print "after:", self.text.index(INSERT)
 
-    def getText(self):
-        textContent = self.text.get("1.0", "end-1c")
-        textContent = textContent.encode('utf-8')
-        return textContent
+    def get_text(self):
+        text_content = self.text.get("1.0", "end-1c")
+        text_content = text_content.encode('utf-8')
+        return text_content
 
     def add_remove_tag(self, command):
         if self.debug:
             print "Action Track: add_remove_tag"
         print("Command:" + command)
         try:
-            firstSelection_index = self.text.index(SEL_FIRST)
+            first_selection_index = self.text.index(SEL_FIRST)
             cursor_index = self.text.index(SEL_LAST)
-            aboveHalf_content = self.text.get('1.0', firstSelection_index)
-            followHalf_content = self.text.get(firstSelection_index, "end-1c")
+            above_half_content = self.text.get('1.0', first_selection_index)
+            follow_half_content = self.text.get(first_selection_index, "end-1c")
             selected_string = self.text.selection_get()
             match = self.tag_regex.match(selected_string)
             if match is not None:
                 # if have selected entity
                 new_string = match.group(2)
                 tag_name = match.group(1)
-                followHalf_content = followHalf_content.replace(selected_string, new_string, 1)
+                follow_half_content = follow_half_content.replace(selected_string, new_string, 1)
                 selected_string = new_string
                 # cursor_index = "%s - %sc" % (cursor_index, str(len(new_string_list[1])+4))
                 cursor_index = cursor_index.split('.')[0] + "." + str(
                     int(cursor_index.split('.')[1]) - (len(tag_name) * 2 + 5))
-            afterEntity_content = followHalf_content[len(selected_string):]
+            after_entity_content = follow_half_content[len(selected_string):]
 
             if command == "q":
                 print 'q: remove entity label'
             else:
                 if len(selected_string) > 0:
                     selected_string, cursor_index = self.add_tag_around_string(selected_string, command, cursor_index)
-            content = aboveHalf_content + selected_string + afterEntity_content
+            content = above_half_content + selected_string + after_entity_content
             content = content.encode('utf-8')
-            self.write_file(self.fileName, content, cursor_index)
+            self.write_file(self.file_name, content, cursor_index)
         except TclError:
             # no text selected - use item under cursor
             cursor_index = self.text.index(INSERT)
             [line_id, column_id] = cursor_index.split('.')
-            aboveLine_content = self.text.get('1.0', str(int(line_id) - 1) + '.end')
-            belowLine_content = self.text.get(str(int(line_id) + 1) + '.0', "end-1c")
+            above_line_content = self.text.get('1.0', str(int(line_id) - 1) + '.end')
+            below_line_content = self.text.get(str(int(line_id) + 1) + '.0', "end-1c")
             line = self.text.get(line_id + '.0', line_id + '.end')
             matched_span = (-1, -1)
             line_before_entity = line
@@ -316,35 +314,35 @@ class YeddaFrame(Frame):
                         else:
                             return
                 line_before_entity += entity_content
-            if aboveLine_content != '':
-                aboveHalf_content = aboveLine_content + '\n' + line_before_entity
+            if above_line_content != '':
+                above_half_content = above_line_content + '\n' + line_before_entity
             else:
-                aboveHalf_content = line_before_entity
+                above_half_content = line_before_entity
 
-            if belowLine_content != '':
-                followHalf_content = line_after_entity + '\n' + belowLine_content
+            if below_line_content != '':
+                follow_half_content = line_after_entity + '\n' + below_line_content
             else:
-                followHalf_content = line_after_entity
+                follow_half_content = line_after_entity
 
-            content = aboveHalf_content + followHalf_content
+            content = above_half_content + follow_half_content
             content = content.encode('utf-8')
-            self.write_file(self.fileName, content, cursor_index)
+            self.write_file(self.file_name, content, cursor_index)
 
-    def deleteTextInput(self, _):
+    def delete_text_input(self, _):
         if self.debug:
-            print "Action Track: deleteTextInput"
+            print "Action Track: delete_text_input"
         get_insert = self.text.index(INSERT)
         print "delete insert:", get_insert
         insert_list = get_insert.split('.')
         last_insert = insert_list[0] + "." + str(int(insert_list[1]) - 1)
         get_input = self.text.get(last_insert, get_insert).encode('utf-8')
         # print "get_input: ", get_input
-        aboveHalf_content = self.text.get('1.0', last_insert).encode('utf-8')
-        followHalf_content = self.text.get(last_insert, "end-1c").encode('utf-8')
+        above_half_content = self.text.get('1.0', last_insert).encode('utf-8')
+        follow_half_content = self.text.get(last_insert, "end-1c").encode('utf-8')
         if len(get_input) > 0:
-            followHalf_content = followHalf_content.replace(get_input, '', 1)
-        content = aboveHalf_content + followHalf_content
-        self.write_file(self.fileName, content, last_insert)
+            follow_half_content = follow_half_content.replace(get_input, '', 1)
+        content = above_half_content + follow_half_content
+        self.write_file(self.file_name, content, last_insert)
 
     def add_tag_around_string(self, content, replaceType, cursor_index):
         if replaceType in self.tag_dict:
@@ -358,35 +356,35 @@ class YeddaFrame(Frame):
             return content, cursor_index
         return new_content, newcursor_index
 
-    def write_file(self, fileName, content, newcursor_index):
+    def write_file(self, file_name, content, newcursor_index):
         if self.debug:
             print "Action track: write_file"
 
-        if len(fileName) > 0:
-            if ".ann" in fileName:
-                new_name = fileName
+        if len(file_name) > 0:
+            if ".ann" in file_name:
+                new_name = file_name
             else:
-                new_name = fileName + '.ann'
+                new_name = file_name + '.ann'
             with open(new_name, 'w') as ann_file:
                 ann_file.write(content)
 
             # print "Writen to new file: ", new_name
-            self.autoLoadNewFile(new_name, newcursor_index)
+            self.auto_load_new_file(new_name, newcursor_index)
             # self.generateSequenceFile()
         else:
             print "Don't write to empty file!"
 
-    def autoLoadNewFile(self, fileName, newcursor_index):
+    def auto_load_new_file(self, file_name, new_cursor_index):
         if self.debug:
-            print "Action Track: autoLoadNewFile"
-        if len(fileName) > 0:
+            print "Action Track: auto_load_new_file"
+        if len(file_name) > 0:
             self.text.delete("1.0", END)
-            text = self.readFile(fileName)
+            text = self.read_file(file_name)
             self.text.insert("end-1c", text)
-            self.setNameLabel("File: " + fileName)
-            self.text.mark_set(INSERT, newcursor_index)
-            self.text.see(newcursor_index)
-            self.setCursorLabel(newcursor_index)
+            self.set_name_label("File: " + file_name)
+            self.text.mark_set(INSERT, new_cursor_index)
+            self.text.see(new_cursor_index)
+            self.set_cursor_label(new_cursor_index)
             self.apply_tag_colors()
 
     def apply_tag_colors(self):
@@ -394,23 +392,23 @@ class YeddaFrame(Frame):
             print "Action Track: apply_tag_colors"
         self.text.config(insertbackground='red', insertwidth=4, font=self.fnt)
 
-        countVar = StringVar()
-        currentCursor = self.text.index(INSERT)
-        lineStart = currentCursor.split('.')[0] + '.0'
-        lineEnd = currentCursor.split('.')[0] + '.end'
+        count_var = StringVar()
+        current_cursor = self.text.index(INSERT)
+        line_start = current_cursor.split('.')[0] + '.0'
+        line_end = current_cursor.split('.')[0] + '.end'
 
         if self.reprocess_whole_file:
             self.text.mark_set("matchStart", "1.0")
             self.text.mark_set("matchEnd", "1.0")
             self.text.mark_set("searchLimit", 'end-1c')
         else:
-            self.text.mark_set("matchStart", lineStart)
-            self.text.mark_set("matchEnd", lineStart)
-            self.text.mark_set("searchLimit", lineEnd)
+            self.text.mark_set("matchStart", line_start)
+            self.text.mark_set("matchEnd", line_start)
+            self.text.mark_set("searchLimit", line_end)
         tag_locations = []
         while True:
             pos = self.text.search(self.force_newline_matching(self.tag_regex.pattern),
-                                   "matchEnd", "searchLimit", count=countVar, regexp=True)
+                                   "matchEnd", "searchLimit", count=count_var, regexp=True)
 
             if pos == "":
                 break
@@ -420,7 +418,7 @@ class YeddaFrame(Frame):
             self.text.mark_set("matchEnd", "%s+%sc" % (pos, 1))
 
             first_pos = pos
-            last_pos = "%s + %sc" % (pos, countVar.get())
+            last_pos = "%s + %sc" % (pos, count_var.get())
 
             # we need to find out which Tag this is to get the color to use
             found_text = self.text.get(first_pos, last_pos)
@@ -482,27 +480,27 @@ class YeddaFrame(Frame):
             colors.append(Color(*row))
         return colors
 
-    def pushToHistory(self):
+    def push_to_history(self):
         if self.debug:
-            print "Action Track: pushToHistory"
-        currentList = []
-        content = self.getText()
-        cursorPosition = self.text.index(INSERT)
-        # print "push to history cursor: ", cursorPosition
-        currentList.append(content)
-        currentList.append(cursorPosition)
-        self.history.append(currentList)
+            print "Action Track: push_to_history"
+        current_list = []
+        content = self.get_text()
+        cursor_position = self.text.index(INSERT)
+        # print "push to history cursor: ", cursor_position
+        current_list.append(content)
+        current_list.append(cursor_position)
+        self.history.append(current_list)
 
-    def pushToHistoryEvent(self, _):
+    def push_to_history_event(self, _):
         if self.debug:
-            print "Action Track: pushToHistoryEvent"
-        currentList = []
-        content = self.getText()
-        cursorPosition = self.text.index(INSERT)
-        # print "push to history cursor: ", cursorPosition
-        currentList.append(content)
-        currentList.append(cursorPosition)
-        self.history.append(currentList)
+            print "Action Track: push_to_history_event"
+        current_list = []
+        content = self.get_text()
+        cursor_position = self.text.index(INSERT)
+        # print "push to history cursor: ", cursor_position
+        current_list.append(content)
+        current_list.append(cursor_position)
+        self.history.append(current_list)
 
     # update shortcut map
     def do_remap_of_shortcuts(self):
@@ -510,7 +508,7 @@ class YeddaFrame(Frame):
             print "Action Track: do_remap_of_shortcuts"
         seq = 0
         new_dict = {}
-        listLength = len(self.label_entry_list)
+        list_length = len(self.label_entry_list)
         delete_num = 0
         for key in sorted(self.tag_dict):
             label = self.label_entry_list[seq].get()
@@ -521,8 +519,8 @@ class YeddaFrame(Frame):
             seq += 1
         self.tag_dict = new_dict
         for idx in range(1, delete_num + 1):
-            self.label_entry_list[listLength - idx].delete(0, END)
-            self.shortcut_label_list[listLength - idx].config(text="NON= ")
+            self.label_entry_list[list_length - idx].delete(0, END)
+            self.shortcut_label_list[list_length - idx].config(text="NON= ")
         self.save_config()
         self.show_shortcut_map()
         tkMessageBox.showinfo("Remap Notification",
@@ -544,9 +542,9 @@ class YeddaFrame(Frame):
         label_font_size = 14
         self.read_config()
 
-        mapLabel = Label(self, text="Tags", foreground=label_color,
-                         font=(self.textFontStyle, label_font_size, self.fontWeight))
-        mapLabel.grid(row=0, column=self.textColumn + 2, columnspan=2, rowspan=1, padx=10)
+        map_label = Label(self, text="Tags", foreground=label_color,
+                         font=(self.text_font_style, label_font_size, self.font_weight))
+        map_label.grid(row=0, column=self.text_column + 2, columnspan=2, rowspan=1, padx=10)
         self.label_entry_list = []
         self.shortcut_label_list = []
         self.label_patch_list = []
@@ -555,26 +553,23 @@ class YeddaFrame(Frame):
             row = i + 1
             # print "key: ", key, "  command: ", self.tag_dict[key]
             shortcut_label = Label(self, text=key.lower() + ": ", foreground=label_color,
-                                   font=(self.textFontStyle, label_font_size, self.fontWeight))
-            shortcut_label.grid(row=row, column=self.textColumn + 2, columnspan=1, rowspan=1, padx=0)
+                                   font=(self.text_font_style, label_font_size, self.font_weight))
+            shortcut_label.grid(row=row, column=self.text_column + 2, columnspan=1, rowspan=1, padx=0)
             self.shortcut_label_list.append(shortcut_label)
 
             label_entry = Entry(self, foreground=label_color,
-                                font=(self.textFontStyle, label_font_size, self.fontWeight))
+                                font=(self.text_font_style, label_font_size, self.font_weight))
             label_entry.insert(0, self.tag_dict[key].description)
-            label_entry.grid(row=row, column=self.textColumn + 3, columnspan=1, rowspan=1)
+            label_entry.grid(row=row, column=self.text_column + 3, columnspan=1, rowspan=1)
             self.label_entry_list.append(label_entry)
 
             label_patch = Canvas(self, width=patch_size, height=patch_size)
-            label_patch.pack()
+            # label_patch.pack()
             label_patch.create_rectangle(0, 0, patch_size, patch_size, fill=self.tag_dict[key].color,
                                          outline=self.tag_dict[key].color)
-            label_patch.grid(row=row, column=self.textColumn + 4, columnspan=1, rowspan=1)
+            label_patch.grid(row=row, column=self.text_column + 4, columnspan=1, rowspan=1)
             self.label_patch_list.append(label_patch)
             # print "row: ", row
-
-    def getCursorIndex(self):
-        return self.text.index(INSERT)
 
     def get_command_from_description(self, tag_description):
         description_list = [v.description for v in self.tag_dict.values()]
@@ -589,7 +584,7 @@ def main():
     root = Tk()
     root.geometry("1300x700+200+200")
     app = YeddaFrame(root)
-    app.setFont(12)
+    app.set_font(12)
     root.mainloop()
 
 
