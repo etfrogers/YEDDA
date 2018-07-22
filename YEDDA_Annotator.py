@@ -10,12 +10,12 @@
 import os.path
 import pickle
 import platform
-import tkFileDialog
-import tkFont
-import tkMessageBox
-from Tkinter import *
+import tkinter.filedialog
+import tkinter.font
+import tkinter.messagebox
+from tkinter import *
 from collections import deque, namedtuple
-from ttk import *  # Frame, Button, Label, Style, Scrollbar
+from tkinter.ttk import *  # Frame, Button, Label, Style, Scrollbar
 import csv
 
 Tag = namedtuple('Tag', ['description', 'color'])
@@ -86,7 +86,7 @@ class YeddaFrame(Frame):
 
         self.lbl = Label(self, text="File: no file is opened")
         self.lbl.grid(sticky=W, pady=4, padx=5)
-        self.fnt = tkFont.Font(family=self.text_font_style, size=self.text_row, underline=0)
+        self.fnt = tkinter.font.Font(family=self.text_font_style, size=self.text_row, underline=0)
         self.text = Text(self, font=self.fnt, selectbackground=self.select_color)
         self.text.grid(row=1, column=0, columnspan=self.text_column, rowspan=self.text_row, padx=12,
                        sticky=E + W + S + N)
@@ -142,7 +142,7 @@ class YeddaFrame(Frame):
 
     def single_left_click(self, _):
         if self.debug:
-            print "Action Track: singleLeftClick"
+            print("Action Track: singleLeftClick")
         cursor_index = self.text.index(INSERT)
         row_column = cursor_index.split('.')
         cursor_text = ("row: %s\ncol: %s" % (row_column[0], row_column[-1]))
@@ -151,27 +151,24 @@ class YeddaFrame(Frame):
     # TODO: select entity by double left click
     def double_left_click(self, _):
         if self.debug:
-            print "Action Track: doubleLeftClick"
+            print("Action Track: doubleLeftClick")
         pass
 
     # Disable right click default copy selection behaviour
     def right_click(self, _):
         if self.debug:
-            print "Action Track: rightClick"
+            print("Action Track: rightClick")
         try:
             _ = self.text.index(SEL_FIRST)
             cursor_index = self.text.index(SEL_LAST)
-            content = self.text.get('1.0', "end-1c").encode('utf-8')
+            content = self.text.get('1.0', "end-1c")
             self.write_file(self.file_name, content, cursor_index)
         except TclError:
             pass
 
     def on_open(self):
         file_types = [('all files', '.*'), ('text files', '.txt'), ('ann files', '.ann')]
-        dlg = tkFileDialog.Open(self, filetypes=file_types)
-        # file_opt = options =  {}
-        # options['file_types'] = [('all files', '.*'), ('text files', '.txt')]
-        # dlg = tkFileDialog.askopenfilename(**options)
+        dlg = tkinter.filedialog.Open(self, filetypes=file_types)
         fl = dlg.show()
         if fl != '':
             self.text.delete("1.0", END)
@@ -195,7 +192,7 @@ class YeddaFrame(Frame):
         _size = value
         _weight = self.font_weight
         _underline = 0
-        fnt = tkFont.Font(family=_family, size=_size, weight=_weight, underline=_underline)
+        fnt = tkinter.font.Font(family=_family, size=_size, weight=_weight, underline=_underline)
         Text(self, font=fnt)
 
     def set_name_label(self, new_file):
@@ -203,7 +200,7 @@ class YeddaFrame(Frame):
 
     def set_cursor_label(self, cursor_index):
         if self.debug:
-            print "Action Track: setCursorLabel"
+            print("Action Track: setCursorLabel")
         row_column = cursor_index.split('.')
         cursor_text = ("row: %s\ncol: %s" % (row_column[0], row_column[-1]))
         self.cursor_index.config(text=cursor_text)
@@ -211,9 +208,9 @@ class YeddaFrame(Frame):
     def text_return_enter(self, event):
         press_key = event.char
         if self.debug:
-            print "Action Track: text_return_enter"
+            print("Action Track: text_return_enter")
         self.push_to_history()
-        print "event: ", press_key
+        print("event: ", press_key)
         # content = self.text.get()
         self.add_remove_tag(press_key.lower())
         # self.delete_text_input()
@@ -221,7 +218,7 @@ class YeddaFrame(Frame):
 
     def go_back_in_history(self, _):
         if self.debug:
-            print "Action Track: go_back_in_history"
+            print("Action Track: go_back_in_history")
         if len(self.history) > 0:
             history_condition = self.history.pop()
             # print "history condition: ", history_condition
@@ -231,16 +228,16 @@ class YeddaFrame(Frame):
             # print "get history cursor: ", cursor_index
             self.write_file(self.file_name, history_content, cursor_index)
         else:
-            print "History is empty!"
+            print("History is empty!")
         self.text.insert(INSERT, 'p')  # add a word as pad for key release delete
 
     def keep_current(self, _):
         if self.debug:
-            print "Action Track: keep_current"
-        print("keep current, insert:%s" % INSERT)
-        print "before:", self.text.index(INSERT)
+            print("Action Track: keep_current")
+        print(("keep current, insert:%s" % INSERT))
+        print("before:", self.text.index(INSERT))
         self.text.insert(INSERT, 'p')
-        print "after:", self.text.index(INSERT)
+        print("after:", self.text.index(INSERT))
 
     def get_text(self):
         text_content = self.text.get("1.0", "end-1c")
@@ -249,8 +246,8 @@ class YeddaFrame(Frame):
 
     def add_remove_tag(self, command):
         if self.debug:
-            print "Action Track: add_remove_tag"
-        print("Command:" + command)
+            print("Action Track: add_remove_tag")
+        print(("Command:" + command))
         try:
             first_selection_index = self.text.index(SEL_FIRST)
             cursor_index = self.text.index(SEL_LAST)
@@ -270,12 +267,11 @@ class YeddaFrame(Frame):
             after_entity_content = follow_half_content[len(selected_string):]
 
             if command == "q":
-                print 'q: remove entity label'
+                print('q: remove entity label')
             else:
                 if len(selected_string) > 0:
                     selected_string, cursor_index = self.add_tag_around_string(selected_string, command, cursor_index)
             content = above_half_content + selected_string + after_entity_content
-            content = content.encode('utf-8')
             self.write_file(self.file_name, content, cursor_index)
         except TclError:
             # no text selected - use item under cursor
@@ -301,10 +297,10 @@ class YeddaFrame(Frame):
                 entity_content = selected_string
                 cursor_index = line_id + '.' + str(int(matched_span[1]) - (len(old_entity_type) * 2 + 5))
                 if command == "q":
-                    print 'q: remove entity label'
+                    print('q: remove entity label')
                 elif command == 'y':
-                    print "y: comfirm recommend label"
-                    old_key = self.tag_dict.keys()[self.tag_dict.values().index(old_entity_type)]
+                    print("y: comfirm recommend label")
+                    old_key = list(self.tag_dict.keys())[list(self.tag_dict.values()).index(old_entity_type)]
                     entity_content, cursor_index = self.add_tag_around_string(selected_string, old_key, cursor_index)
                 else:
                     if len(selected_string) > 0:
@@ -325,20 +321,19 @@ class YeddaFrame(Frame):
                 follow_half_content = line_after_entity
 
             content = above_half_content + follow_half_content
-            content = content.encode('utf-8')
             self.write_file(self.file_name, content, cursor_index)
 
     def delete_text_input(self, _):
         if self.debug:
-            print "Action Track: delete_text_input"
+            print("Action Track: delete_text_input")
         get_insert = self.text.index(INSERT)
-        print "delete insert:", get_insert
+        print("delete insert:", get_insert)
         insert_list = get_insert.split('.')
         last_insert = insert_list[0] + "." + str(int(insert_list[1]) - 1)
-        get_input = self.text.get(last_insert, get_insert).encode('utf-8')
+        get_input = self.text.get(last_insert, get_insert)
         # print "get_input: ", get_input
-        above_half_content = self.text.get('1.0', last_insert).encode('utf-8')
-        follow_half_content = self.text.get(last_insert, "end-1c").encode('utf-8')
+        above_half_content = self.text.get('1.0', last_insert)
+        follow_half_content = self.text.get(last_insert, "end-1c")
         if len(get_input) > 0:
             follow_half_content = follow_half_content.replace(get_input, '', 1)
         content = above_half_content + follow_half_content
@@ -351,32 +346,33 @@ class YeddaFrame(Frame):
             newcursor_index = cursor_index.split('.')[0] + "." + str(
                 int(cursor_index.split('.')[1]) + len(self.tag_dict[replaceType]) + 5)
         else:
-            print "Invalid command!"
-            print "cursor index: ", self.text.index(INSERT)
+            print("Invalid command!")
+            print("cursor index: ", self.text.index(INSERT))
             return content, cursor_index
         return new_content, newcursor_index
 
-    def write_file(self, file_name, content, newcursor_index):
+    def write_file(self, file_name, content, new_cursor_index):
         if self.debug:
-            print "Action track: write_file"
+            print("Action track: write_file")
 
         if len(file_name) > 0:
             if ".ann" in file_name:
                 new_name = file_name
             else:
                 new_name = file_name + '.ann'
-            with open(new_name, 'w') as ann_file:
+            content = content.encode('utf-8')
+            with open(new_name, 'wb') as ann_file:
                 ann_file.write(content)
 
             # print "Writen to new file: ", new_name
-            self.auto_load_new_file(new_name, newcursor_index)
+            self.auto_load_new_file(new_name, new_cursor_index)
             # self.generateSequenceFile()
         else:
-            print "Don't write to empty file!"
+            print("Don't write to empty file!")
 
     def auto_load_new_file(self, file_name, new_cursor_index):
         if self.debug:
-            print "Action Track: auto_load_new_file"
+            print("Action Track: auto_load_new_file")
         if len(file_name) > 0:
             self.text.delete("1.0", END)
             text = self.read_file(file_name)
@@ -389,7 +385,7 @@ class YeddaFrame(Frame):
 
     def apply_tag_colors(self):
         if self.debug:
-            print "Action Track: apply_tag_colors"
+            print("Action Track: apply_tag_colors")
         self.text.config(insertbackground='red', insertwidth=4, font=self.fnt)
 
         count_var = StringVar()
@@ -482,7 +478,7 @@ class YeddaFrame(Frame):
 
     def push_to_history(self):
         if self.debug:
-            print "Action Track: push_to_history"
+            print("Action Track: push_to_history")
         current_list = []
         content = self.get_text()
         cursor_position = self.text.index(INSERT)
@@ -493,7 +489,7 @@ class YeddaFrame(Frame):
 
     def push_to_history_event(self, _):
         if self.debug:
-            print "Action Track: push_to_history_event"
+            print("Action Track: push_to_history_event")
         current_list = []
         content = self.get_text()
         cursor_position = self.text.index(INSERT)
@@ -505,7 +501,7 @@ class YeddaFrame(Frame):
     # update shortcut map
     def do_remap_of_shortcuts(self):
         if self.debug:
-            print "Action Track: do_remap_of_shortcuts"
+            print("Action Track: do_remap_of_shortcuts")
         seq = 0
         list_length = len(self.label_entry_list)
         delete_num = 0
@@ -521,9 +517,9 @@ class YeddaFrame(Frame):
             self.shortcut_label_list[list_length - idx].config(text="NON= ")
         self.save_config()
         self.show_shortcut_map()
-        tkMessageBox.showinfo("Remap Notification",
-                              "Shortcut map has been updated!\n\nConfigure file has been saved in File:" +
-                              self.config_file)
+        tkinter.messagebox.showinfo("Remap Notification",
+                                    "Shortcut map has been updated!\n\nConfigure file has been saved in File:" +
+                                    self.config_file)
 
     def save_config(self):
         with open(self.config_file, 'wb') as fp:
@@ -562,23 +558,21 @@ class YeddaFrame(Frame):
             self.label_entry_list.append(label_entry)
 
             label_patch = Canvas(self, width=patch_size, height=patch_size)
-            # label_patch.pack()
             label_patch.create_rectangle(0, 0, patch_size, patch_size, fill=self.tag_dict[key].color,
                                          outline=self.tag_dict[key].color)
             label_patch.grid(row=row, column=self.text_column + 4, columnspan=1, rowspan=1)
             self.label_patch_list.append(label_patch)
-            # print "row: ", row
 
     def get_command_from_description(self, tag_description):
-        description_list = [v.description for v in self.tag_dict.values()]
+        description_list = [v.description for v in list(self.tag_dict.values())]
         index = description_list.index(tag_description)
-        key = self.tag_dict.keys()[index]
+        key = list(self.tag_dict.keys())[index]
         return key
 
 
 def main():
     print("SUTDAnnotator launched!")
-    print("OS:%s" % (platform.system()))
+    print(("OS:%s" % (platform.system())))
     root = Tk()
     root.geometry("1300x700+200+200")
     app = YeddaFrame(root)
