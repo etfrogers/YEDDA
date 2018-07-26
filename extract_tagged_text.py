@@ -1,7 +1,7 @@
 import argparse
 import glob
 import os
-from typing import List, Tuple
+from typing import List, Tuple, Set
 from YEDDA_Annotator import YeddaFrame
 import datetime
 import re
@@ -41,10 +41,10 @@ class TaggedFile:
     def annotated_file(self) -> str:
         return f'{self.file_name}.{ANN_EXT}'
 
-    def list_all_tags(self) -> List[str]:
+    def list_all_tags(self) -> Set[str]:
         # print("Finding all tags in " + self.annotated_file)
         matches = YeddaFrame.tag_regex.findall(self.tagged_text)
-        tags = [m[0] for m in matches]
+        tags = {m[0] for m in matches}
         return tags
 
     def get_text_for_tag(self, tag: str) -> List[str]:
@@ -86,18 +86,17 @@ def process_directory(path: str) -> None:
         print('No tags found.')
 
 
-
-def get_files(path):
+def get_files(path: str) -> List[TaggedFile]:
     pattern = os.path.join(path, f'*.{TXT_EXT}')
     txt_file_names = glob.glob(pattern)
     return [TaggedFile(fn) for fn in txt_file_names]
 
 
-def find_all_tags(files):
-    tags = []
+def find_all_tags(files: List[TaggedFile]) -> List[str]:
+    tags = set()
     for file in files:
-        tags.extend(file.list_all_tags())
-    tags = list(set(tags))  # remove duplicated elements by casting to set
+        tags.update(file.list_all_tags())
+    tags = list(tags)
     tags.sort()
     return tags
 
