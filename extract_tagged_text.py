@@ -104,22 +104,11 @@ def main():
     parser = argparse.ArgumentParser(description='Extract the tagged text from a folder of files and create new files')
     parser.add_argument('path',
                         help='The directory to process')
-    # parser.add_argument('-16', '--16bit-pngs', dest='sixteen_bit_pngs', action='store_const',
-    #                     const=True, default=False,
-    #                     help='Save as 16 bit PNGs (default: False)')
-    # parser.add_argument('--no-thumbnails', action='store_const',
-    #                     const=True, default=False,
-    #                     help='Skip making thumbnails (default: False)')
-    # parser.add_argument('--no-pngs', action='store_const',
-    #                     const=True, default=False,
-    #                     help='Skip making PNG files (default: False)')
-    # parser.add_argument('-f', '--format', choices=['png', 'jpg'], default='png',
-    #                     help='Format of files to save. Only PNG of JPG are supported at the moment')
-
     args = parser.parse_args()
     print('Processing files from: ' + args.path)
 
     process_directory(args.path)
+
 
 if __name__ == '__main__':
     main()
