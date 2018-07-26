@@ -64,24 +64,27 @@ def make_extracted_dir(path: str) -> str:
     return dir_path
 
 
-def process_directory(path: str) -> None:
-    files = get_files(path)
-    print('Found files: {}'.format(str([f.file_name for f in files])))
-    tags = find_all_tags(files)
-    print('Found tags: {}'.format(str(tags)))
-
-    if not tags:
-        print('No tags found. Exiting')
-        return
-
+def extract_and_save_tagged_text(files, path, tags):
     ext_dir = make_extracted_dir(path)
-
     for tag in tags:
         text_for_tag = [[file.file_name] + file.get_text_for_tag(tag) for file in files]
         file_strs = ['\n\n'.join(l) for l in text_for_tag]
         str_to_write = FILE_SEPARATOR.join(file_strs)
         with open(os.path.join(ext_dir, f'{tag}.{TXT_EXT}'), 'w') as f:
             f.write(str_to_write)
+
+
+def process_directory(path: str) -> None:
+    files = get_files(path)
+    print('Found files: {}'.format(str([f.file_name for f in files])))
+    tags = find_all_tags(files)
+    print('Found tags: {}'.format(str(tags)))
+
+    if tags:
+        extract_and_save_tagged_text(files, path, tags)
+    else:
+        print('No tags found.')
+
 
 
 def get_files(path):
