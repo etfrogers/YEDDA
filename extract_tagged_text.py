@@ -6,8 +6,8 @@ from YEDDA_Annotator import YeddaFrame
 import datetime
 import re
 
-TXT_EXT = '.txt'
-ANN_EXT = '.ann'
+TXT_EXT = 'txt'
+ANN_EXT = 'ann'
 EXTRACTED_DIR_BASE = 'extracted_text'
 FILE_SEPARATOR = '''
 
@@ -17,7 +17,7 @@ FILE_SEPARATOR = '''
 
 
 class TaggedFile:
-    def __init__(self, file_name):
+    def __init__(self, file_name: str):
         self.file_name: str = file_name
         self.found_tagged: bool = True
         self._untagged_text, self.tagged_text = self.read_files()
@@ -39,7 +39,7 @@ class TaggedFile:
 
     @property
     def annotated_file(self) -> str:
-        return self.file_name + ANN_EXT
+        return f'{self.file_name}.{ANN_EXT}'
 
     def list_all_tags(self) -> List[str]:
         # print("Finding all tags in " + self.annotated_file)
@@ -66,9 +66,9 @@ def make_extracted_dir(path: str) -> str:
 
 def process_directory(path: str) -> None:
     files = get_files(path)
-    # print(files)
+    print('Found files: {}'.format(str([f.file_name for f in files])))
     tags = find_all_tags(files)
-    print('Found tags: ' + str(tags))
+    print('Found tags: {}'.format(str(tags)))
 
     if not tags:
         print('No tags found. Exiting')
@@ -80,14 +80,14 @@ def process_directory(path: str) -> None:
         text_for_tag = [[file.file_name] + file.get_text_for_tag(tag) for file in files]
         file_strs = ['\n\n'.join(l) for l in text_for_tag]
         str_to_write = FILE_SEPARATOR.join(file_strs)
-        with open(os.path.join(ext_dir, tag + TXT_EXT), 'w') as f:
+        with open(os.path.join(ext_dir, f'{tag}.{TXT_EXT}'), 'w') as f:
             f.write(str_to_write)
 
 
 def get_files(path):
-    txt_file_names = glob.glob(path + os.sep + '*' + TXT_EXT)
-    files = [TaggedFile(fn) for fn in txt_file_names]
-    return files
+    pattern = os.path.join(path, f'*.{TXT_EXT}')
+    txt_file_names = glob.glob(pattern)
+    return [TaggedFile(fn) for fn in txt_file_names]
 
 
 def find_all_tags(files):
