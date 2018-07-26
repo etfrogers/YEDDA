@@ -23,6 +23,9 @@ Color = namedtuple('Color', ['name', 'hex', 'rgb', 'cmyk'])
 
 
 class YeddaFrame(Frame):
+    tag_regex = re.compile(r'<([\w-]+?)>(.*?)</\1>', flags=re.DOTALL)
+    overlapped_tags_regex = re.compile(r'<([\w-]+?)>(.*?)</(?!\1)[\w]+?>', flags=re.DOTALL)
+
     # noinspection PyMissingConstructor
     def __init__(self, parent):
         Frame.__init__(self, parent)
@@ -61,8 +64,6 @@ class YeddaFrame(Frame):
         self.keep_recommend = True
 
         self.config_file = "config.pkl"
-        self.tag_regex = re.compile(r'<([\w-]+?)>(.*?)</\1>', flags=re.DOTALL)
-        self.overlapped_tags_regex = re.compile(r'<([\w-]+?)>(.*?)</(?!\1)[\w]+?>', flags=re.DOTALL)
         # configure color
         self.overlapped_tag_color = "gray"
         self.select_color = 'gray'
