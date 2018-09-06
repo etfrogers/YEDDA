@@ -6,6 +6,7 @@ from YEDDA_Annotator import YeddaFrame
 import datetime
 import regex as re
 
+half_tag_re = re.compile(r'<(/?)([\w-]+?)>')
 TXT_EXT = 'txt'
 ANN_EXT = 'ann'
 EXTRACTED_DIR_BASE = 'extracted_text'
@@ -16,12 +17,19 @@ FILE_SEPARATOR = '''
 '''
 
 
+class TaggedChunk:
+    def __init__(self, tags: Set[str]=None, text=None):
+        self.tags: Set[str] = tags
+        self.text: str = text
+
+
 class TaggedFile:
     def __init__(self, file_name: str):
         self.file_name: str = file_name
         self.found_tagged: bool = True
         self._untagged_text, self.tagged_text = self._read_files()
         self._all_tags = self._find_all_tags_in_file()
+        self._tagged_chunks = self.build_tag_structure(set())
 
     def _read_files(self) -> Tuple[str, str]:
         with open(self.file_name, 'r') as f:
@@ -43,6 +51,10 @@ class TaggedFile:
         return self._untagged_text
 
     @property
+    def tagged_chunks(self):
+        return self._tagged_chunks
+
+    @property
     def annotated_file(self) -> str:
         return f'{self.file_name}.{ANN_EXT}'
 
@@ -52,10 +64,40 @@ class TaggedFile:
         tags = {m[0] for m in matches}
         return tags
 
+    def build_tag_structure(self, input_tags: Set[str], input_chunk=None) -> List[TaggedChunk]:
+        if input_chunk is None:
+            input_chunk = self.tagged_text
+
+        tagged_chunks: List[TaggedChunk] = []
+        for tag in self.all_tags:
+            if tag in input_tags:
+                continue
+            current_tags = input_tags.copy()
+            current_tags.add(tag)
+            text_chunks = self.get_text_for_tag_from_string(tag, input_chunk, implicit_start_end_tags=True)
+            for chunk in text_chunks:
+                matches = half_tag_re.findall(chunk)
+                if not matches:
+                    tagged_chunks.append(TaggedChunk(current_tags, chunk))
+                else:
+                    tagged_chunks.append(TaggedChunk(current_tags, chunk))
+                    tagged_chunks.extend(self.build_tag_structure(current_tags, chunk))
+        return tagged_chunks
+
     def get_text_for_tag(self, tag: str) -> List[str]:
-        tag_regex = re.compile('<' + tag + '>(.*?)</' + tag + '>', flags=re.DOTALL)
-        matches = tag_regex.findall(self.tagged_text, overlapped=True)
-        matches = [re.sub('<[\w/-]+?>', '', m) for m in matches]
+        return self.get_text_for_tag_from_string(tag, self.tagged_text, implicit_start_end_tags=False)
+
+    @staticmethod
+    def get_text_for_tag_from_string(tag: str, chunk: str, implicit_start_end_tags: bool=False):
+        specific_tag_regex = re.compile('<' + tag + '>(.*?)</' + tag + '>', flags=re.DOTALL)
+        matches = specific_tag_regex.findall(chunk, overlapped=True)
+        if implicit_start_end_tags:
+            half_specific_tag_regex = re.compile('<(/?)(' + tag + ')>', flags=re.DOTALL)
+            implicit_matches = half_specific_tag_regex.findall(chunk)
+            if implicit_matches:
+                pass
+
+        # matches = [half_tag_re.sub('', m) for m in matches]
         return matches
 
 
