@@ -106,7 +106,15 @@ def main():
     parser = argparse.ArgumentParser(description='Extract the tagged text from a folder of files and create new files')
     parser.add_argument('path',
                         help='The directory to process')
+    parser.add_argument('--version', '-v', action='store_const', const=True, default=False)
     args = parser.parse_args()
+
+    if args.version:
+        with open('version.txt', 'r') as fp:
+            version = fp.read()
+        print(version)
+        return
+
     print('Processing files from: ' + args.path)
 
     process_directory(args.path)
