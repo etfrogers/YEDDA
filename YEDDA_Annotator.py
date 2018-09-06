@@ -8,7 +8,6 @@
 # coding=utf-8
 
 import os.path
-import pickle
 import platform
 import tkinter.filedialog
 import tkinter.font
@@ -17,6 +16,7 @@ from tkinter import *
 from collections import deque, namedtuple
 from tkinter.ttk import *  # Frame, Button, Label, Style, Scrollbar
 import csv
+import yaml
 
 Tag = namedtuple('Tag', ['description', 'color'])
 Color = namedtuple('Color', ['name', 'hex', 'rgb', 'cmyk'])
@@ -63,7 +63,8 @@ class YeddaFrame(Frame):
         self.text_column = 5
         self.keep_recommend = True
 
-        self.config_file = "config.pkl"
+        self.config_file = "config.yaml"
+
         # configure color
         self.overlapped_tag_color = "gray"
         self.select_color = 'gray'
@@ -519,17 +520,17 @@ class YeddaFrame(Frame):
         self.save_config()
         self.show_shortcut_map()
         tkinter.messagebox.showinfo("Remap Notification",
-                                    "Shortcut map has been updated!\n\nConfigure file has been saved in File:" +
+                                    "Shortcut map has been updated!\n\nConfiguration file has been saved in File:" +
                                     self.config_file)
 
     def save_config(self):
-        with open(self.config_file, 'wb') as fp:
-            pickle.dump(self.tag_dict, fp)
+        with open(self.config_file, 'w') as fp:
+            yaml.dump(serialise_tag_dict(self.tag_dict), fp)
 
     def read_config(self):
         if os.path.isfile(self.config_file):
-            with open(self.config_file, 'rb') as fp:
-                self.tag_dict = pickle.load(fp)
+            with open(self.config_file, 'r') as fp:
+                self.tag_dict = deserialise_tag_dict(yaml.load(fp))
 
     # show shortcut map
     def show_shortcut_map(self):
@@ -569,6 +570,18 @@ class YeddaFrame(Frame):
         index = description_list.index(tag_description)
         key = list(self.tag_dict.keys())[index]
         return key
+
+
+def tag_to_dict(tag: Tag):
+    return {'description': tag.description, 'color': tag.color}
+
+
+def serialise_tag_dict(dict_in):
+    return {key: tag_to_dict(val) for key, val in dict_in.items()}
+
+
+def deserialise_tag_dict(dict_in):
+    return {key: Tag(val['description'], val['color']) for key, val in dict_in.items()}
 
 
 def main():
