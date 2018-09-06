@@ -20,9 +20,10 @@ class TaggedFile:
     def __init__(self, file_name: str):
         self.file_name: str = file_name
         self.found_tagged: bool = True
-        self._untagged_text, self.tagged_text = self.read_files()
+        self._untagged_text, self.tagged_text = self._read_files()
+        self._all_tags = self._find_all_tags_in_file()
 
-    def read_files(self) -> Tuple[str, str]:
+    def _read_files(self) -> Tuple[str, str]:
         with open(self.file_name, 'r') as f:
             ut = f.read()
         try:
@@ -34,6 +35,10 @@ class TaggedFile:
         return ut, tt
 
     @property
+    def all_tags(self):
+        return self._all_tags
+
+    @property
     def untagged_text(self) -> str:
         return self._untagged_text
 
@@ -41,7 +46,7 @@ class TaggedFile:
     def annotated_file(self) -> str:
         return f'{self.file_name}.{ANN_EXT}'
 
-    def list_all_tags(self) -> Set[str]:
+    def _find_all_tags_in_file(self) -> Set[str]:
         # print("Finding all tags in " + self.annotated_file)
         matches = YeddaFrame.tag_regex.findall(self.tagged_text, overlapped=True)
         tags = {m[0] for m in matches}
@@ -95,7 +100,7 @@ def get_files(path: str) -> List[TaggedFile]:
 def find_all_tags(files: List[TaggedFile]) -> List[str]:
     tags = set()
     for file in files:
-        tags.update(file.list_all_tags())
+        tags.update(file.all_tags)
     tags = list(tags)
     tags.sort()
     return tags
