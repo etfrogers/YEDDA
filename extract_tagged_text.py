@@ -4,7 +4,7 @@ import os
 from typing import List, Tuple, Set
 from YEDDA_Annotator import YeddaFrame
 import datetime
-import re
+import regex as re
 
 TXT_EXT = 'txt'
 ANN_EXT = 'ann'
@@ -43,13 +43,13 @@ class TaggedFile:
 
     def list_all_tags(self) -> Set[str]:
         # print("Finding all tags in " + self.annotated_file)
-        matches = YeddaFrame.tag_regex.findall(self.tagged_text)
+        matches = YeddaFrame.tag_regex.findall(self.tagged_text, overlapped=True)
         tags = {m[0] for m in matches}
         return tags
 
     def get_text_for_tag(self, tag: str) -> List[str]:
-        tag_regex = re.compile('<' + tag + '>(.*?)</' + tag + '>')
-        matches = tag_regex.findall(self.tagged_text)
+        tag_regex = re.compile('<' + tag + '>(.*?)</' + tag + '>', flags=re.DOTALL)
+        matches = tag_regex.findall(self.tagged_text, overlapped=True)
         matches = [re.sub('<[\w/-]+?>', '', m) for m in matches]
         return matches
 

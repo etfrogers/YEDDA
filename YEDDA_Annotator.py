@@ -17,9 +17,12 @@ from collections import deque, namedtuple
 from tkinter.ttk import *  # Frame, Button, Label, Style, Scrollbar
 import csv
 import yaml
+import regex as re
 
 Tag = namedtuple('Tag', ['description', 'color'])
 Color = namedtuple('Color', ['name', 'hex', 'rgb', 'cmyk'])
+
+# TODO coloring bug on large files
 
 
 class YeddaFrame(Frame):
