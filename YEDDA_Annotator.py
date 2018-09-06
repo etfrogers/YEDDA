@@ -23,6 +23,9 @@ Tag = namedtuple('Tag', ['description', 'color'])
 Color = namedtuple('Color', ['name', 'hex', 'rgb', 'cmyk'])
 
 # TODO coloring bug on large files
+# TODO check file encoding bug
+# TODO Collapse tag ID lines
+# TODO Version dialog
 
 
 class YeddaFrame(Frame):
