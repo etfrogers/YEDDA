@@ -18,4 +18,4 @@ git commit --amend --no-edit
 git tag -a ${tag}
 curr_branch=`git rev-parse --abbrev-ref HEAD`
 git checkout release && git merge ${curr_branch} --ff-only && git checkout ${curr_branch}
-build.sh ${tag}
+./build.sh ${tag}
