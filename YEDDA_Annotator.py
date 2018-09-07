@@ -100,7 +100,7 @@ class YeddaFrame(Frame):
 
         self.lbl = Label(self, text="File: no file is opened")
         self.lbl.grid(sticky=W, pady=4, padx=5)
-        self.fnt = tkinter.font.Font(family=self.text_font_style, size=self.text_row, underline=0)
+        self.fnt = tkinter.font.Font(family=self.text_font_style, size=11, underline=0)
         self.text = Text(self, font=self.fnt, selectbackground=self.select_color)
         self.text.grid(row=1, column=0, columnspan=self.text_column, rowspan=self.text_row, padx=12,
                        sticky=E + W + S + N)
