@@ -26,6 +26,16 @@ Color = namedtuple('Color', ['name', 'hex', 'rgb', 'cmyk'])
 # TODO "Add tag" button?
 
 
+def resource_path():
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except AttributeError:
+        base_path = '.'
+    return base_path
+
+
 class YeddaFrame(Frame):
     tag_regex = re.compile(r'<([\w-]+?)>(.*?)</\1>', flags=re.DOTALL)
     overlapped_tags_regex = re.compile(r'<([\w-]+?)>(.*?)</(?!\1)[\w]+?>', flags=re.DOTALL)
@@ -33,7 +43,7 @@ class YeddaFrame(Frame):
     # noinspection PyMissingConstructor
     def __init__(self, parent):
         Frame.__init__(self, parent)
-        self.version = "YEDDA-V1.0 Annotator"
+        self.version = "YEDDA Annotator"
         self.os = platform.system().lower()
         self.parent = parent
         self.file_name = ""
@@ -122,13 +132,6 @@ class YeddaFrame(Frame):
 
         version_button = Button(self, text="Version", command=self.show_version)
         version_button.grid(row=7, column=self.text_column + 1, pady=0)
-
-        # cursor_name = Label(self, text="Cursor: ", foreground="black",
-        #                     font=(self.text_font_style, 14, self.font_weight))
-        # cursor_name.grid(row=9, column=self.text_column + 1, pady=4)
-        # self.cursor_index = Label(self, text=("row: %s\ncol: %s" % (0, 0)), foreground="red",
-        #                           font=(self.text_font_style, 14, self.font_weight))
-        # self.cursor_index.grid(row=10, column=self.text_column + 1, pady=4)
 
         # for press_key in self.tag_dict.keys():
         for idx in range(0, len(self.all_key)):
@@ -527,9 +530,9 @@ class YeddaFrame(Frame):
 
     @staticmethod
     def show_version():
-        with open('version.txt', 'r') as fp:
+        with open(os.path.join(resource_path(), 'version.txt'), 'r') as fp:
             text = fp.read()
-        tkinter.messagebox.showinfo('Verison', text)
+        tkinter.messagebox.showinfo('Version', text)
 
     def save_config(self):
         with open(self.config_file, 'w') as fp:

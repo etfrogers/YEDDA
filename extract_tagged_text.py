@@ -3,7 +3,7 @@ import glob
 import os
 from enum import Enum
 from typing import List, Tuple, Set
-from YEDDA_Annotator import YeddaFrame
+from YEDDA_Annotator import YeddaFrame, resource_path
 import datetime
 import regex as re
 
@@ -206,7 +206,7 @@ def main():
     args = parser.parse_args()
 
     if args.version:
-        with open('version.txt', 'r') as fp:
+        with open(os.path.join(resource_path(), 'version.txt'), 'r') as fp:
             version = fp.read()
         print(version)
         return
