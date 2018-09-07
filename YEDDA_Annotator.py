@@ -25,7 +25,6 @@ Color = namedtuple('Color', ['name', 'hex', 'rgb', 'cmyk'])
 # TODO coloring bug on large files
 # TODO check file encoding bug
 # TODO "Add tag" button
-# TODO Version dialog
 
 
 class YeddaFrame(Frame):
@@ -116,11 +115,14 @@ class YeddaFrame(Frame):
         open_btn = Button(self, text="Open", command=self.on_open)
         open_btn.grid(row=1, column=self.text_column + 1)
 
-        remap_button = Button(self, text="ReMap", command=self.do_remap_of_shortcuts)
-        remap_button.grid(row=4, column=self.text_column + 1, pady=0)
+        remap_button = Button(self, text="Save Tags", command=self.do_remap_of_shortcuts)
+        remap_button.grid(row=3, column=self.text_column + 1, pady=0)
 
         quit_button = Button(self, text="Quit", command=self.quit)
-        quit_button.grid(row=6, column=self.text_column + 1, pady=0)
+        quit_button.grid(row=5, column=self.text_column + 1, pady=0)
+
+        version_button = Button(self, text="Version", command=self.show_version)
+        version_button.grid(row=7, column=self.text_column + 1, pady=0)
 
         # cursor_name = Label(self, text="Cursor: ", foreground="black",
         #                     font=(self.text_font_style, 14, self.font_weight))
@@ -520,9 +522,15 @@ class YeddaFrame(Frame):
             self.shortcut_label_list[list_length - idx].config(text="NON= ")
         self.save_config()
         self.show_shortcut_map()
-        tkinter.messagebox.showinfo("Remap Notification",
-                                    "Shortcut map has been updated!\n\nConfiguration file has been saved in File:" +
+        tkinter.messagebox.showinfo("Tags Updated",
+                                    "Tag map has been updated!\n\nConfiguration file has been saved in File: " +
                                     self.config_file)
+
+    @staticmethod
+    def show_version():
+        with open('version.txt', 'r') as fp:
+            text = fp.read()
+        tkinter.messagebox.showinfo('Verison', text)
 
     def save_config(self):
         with open(self.config_file, 'w') as fp:
