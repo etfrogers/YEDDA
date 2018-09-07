@@ -125,13 +125,16 @@ class YeddaFrame(Frame):
         open_btn.grid(row=1, column=self.text_column + 1)
 
         remap_button = Button(self, text="Save Tags", command=self.do_remap_of_shortcuts)
-        remap_button.grid(row=3, column=self.text_column + 1, pady=0)
+        remap_button.grid(row=2, column=self.text_column + 1, pady=0)
 
         quit_button = Button(self, text="Quit", command=self.quit)
-        quit_button.grid(row=5, column=self.text_column + 1, pady=0)
+        quit_button.grid(row=3, column=self.text_column + 1, pady=0)
+
+        extract_button = Button(self, text="Extract Tags", command=self.extract_tags)
+        extract_button.grid(row=5, column=self.text_column + 1, pady=0)
 
         version_button = Button(self, text="Version", command=self.show_version)
-        version_button.grid(row=7, column=self.text_column + 1, pady=0)
+        version_button.grid(row=20, column=self.text_column + 1, pady=0)
 
         # for press_key in self.tag_dict.keys():
         for idx in range(0, len(self.all_key)):
@@ -582,6 +585,11 @@ class YeddaFrame(Frame):
         index = description_list.index(tag_description)
         key = list(self.tag_dict.keys())[index]
         return key
+
+    def extract_tags(self):
+        from extract_tagged_text import process_directory
+        path = tkinter.filedialog.askdirectory()
+        process_directory(path)
 
 
 def tag_to_dict(tag: Tag):

@@ -1,2 +1,2 @@
-Version 1.1.5
-v1.1.5
+Version 1.1.6
+v1.1.6
