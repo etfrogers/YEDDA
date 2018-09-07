@@ -23,8 +23,7 @@ Tag = namedtuple('Tag', ['description', 'color'])
 Color = namedtuple('Color', ['name', 'hex', 'rgb', 'cmyk'])
 
 # TODO coloring bug on large files
-# TODO check file encoding bug
-# TODO "Add tag" button
+# TODO "Add tag" button?
 
 
 class YeddaFrame(Frame):
@@ -196,7 +195,7 @@ class YeddaFrame(Frame):
             self.text.mark_set(INSERT, "1.0")
 
     def read_file(self, filename):
-        with open(filename, "rU") as f:
+        with open(filename, "rU", encoding='utf-8') as f:
             text = f.read()
         self.file_name = filename
         return text
