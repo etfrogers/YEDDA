@@ -6,6 +6,7 @@ from typing import List, Tuple, Set
 from YEDDA_Annotator import YeddaFrame, resource_path
 import datetime
 import regex as re
+from tkinter import filedialog
 
 half_tag_re = re.compile(r'<(/?)([\w-]+?)>')
 TXT_EXT = 'txt'
@@ -200,7 +201,7 @@ def find_all_tag_sets(files: List[TaggedFile]) -> List[str]:
 def main():
     print("Tagged file processor")
     parser = argparse.ArgumentParser(description='Extract the tagged text from a folder of files and create new files')
-    parser.add_argument('path',
+    parser.add_argument('path', nargs='?',
                         help='The directory to process')
     parser.add_argument('--version', '-v', action='store_const', const=True, default=False)
     args = parser.parse_args()
@@ -211,9 +212,12 @@ def main():
         print(version)
         return
 
-    print('Processing files from: ' + args.path)
+    path = args.path
+    if path is None:
+        path = filedialog.askdirectory()
 
-    process_directory(args.path)
+    print('Processing files from: ' + path)
+    process_directory(path)
 
 
 if __name__ == '__main__':
