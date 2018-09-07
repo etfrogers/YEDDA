@@ -1,6 +1,5 @@
 build/
 dist/
-*.spec
 *.pyc
 *.ann
 **/extracted_text_*
