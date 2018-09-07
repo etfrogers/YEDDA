@@ -42,7 +42,7 @@ def test_overlapped_tags():
     assert 'less stuff' in extract_tagged_text.find_text_with_tag_set(result.tagged_chunks, {'1', '2'})
 
 
-def test_complex_tags():
+def test_complex_tags1():
     result = extract_tagged_text.TaggedFile('tests/test_file_3.txt')
     # <a>sad<b> dasdas</b> sadsad<b>asda</a>das</b>
     assert len(result.tagged_chunks) == 6
@@ -55,3 +55,20 @@ def test_complex_tags():
     assert 'asdadas' in extract_tagged_text.find_text_with_tag_set(result.tagged_chunks, {'b'})
     assert 'sad' not in extract_tagged_text.find_text_with_tag_set(result.tagged_chunks, {'b'})
 
+
+def test_complex_tags2():
+    result = extract_tagged_text.TaggedFile('tests/test_file_4.txt')
+    assert len(result.tagged_chunks) == 7
+    tags = [t.tags for t in result.tagged_chunks]
+    assert set('a') in tags
+    assert set('b') in tags
+    assert set('c') in tags
+    assert {'a', 'b'} not in tags
+    assert {'a', 'c'} not in tags
+    assert {'a', 'b', 'c'} not in tags
+    assert {'e', 'd'} in tags
+    assert {'e'} in tags
+    # assert 'asda' in extract_tagged_text.find_text_with_tag_set(result.tagged_chunks, {'a', 'b'})
+    # assert ' dasdas' in extract_tagged_text.find_text_with_tag_set(result.tagged_chunks, {'a', 'b'})
+    # assert 'asdadas' in extract_tagged_text.find_text_with_tag_set(result.tagged_chunks, {'b'})
+    # assert 'sad' not in extract_tagged_text.find_text_with_tag_set(result.tagged_chunks, {'b'})
