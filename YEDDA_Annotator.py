@@ -90,7 +90,7 @@ class YeddaFrame(Frame):
         # configure color
         self.overlapped_tag_color = "gray"
         self.select_color = 'gray'
-        self.text_font_style = "Times"
+        self.text_font_style = "Calibri"
         self.font_weight = "normal"
         self.init_ui()
 
