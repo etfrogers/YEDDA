@@ -70,7 +70,7 @@ class YeddaFrame(Frame):
         self.shortcut_label_list = []
         self.label_patch_list = []
         # default GUI display parameter
-        if len(self.tag_dict) > 20:
+        if len(self.tag_dict) > 21:
             self.text_row = len(self.tag_dict)
         else:
             self.text_row = 20
@@ -160,10 +160,6 @@ class YeddaFrame(Frame):
     def single_left_click(self, _):
         if self.debug:
             print("Action Track: singleLeftClick")
-        cursor_index = self.text.index(INSERT)
-        row_column = cursor_index.split('.')
-        cursor_text = ("row: %s\ncol: %s" % (row_column[0], row_column[-1]))
-        self.cursor_index.config(text=cursor_text)
 
     # TODO: select entity by double left click
     def double_left_click(self, _):
@@ -196,7 +192,6 @@ class YeddaFrame(Frame):
             # self.setDisplay()
             # self.initAnnotate()
             self.text.mark_set(INSERT, "1.0")
-            self.set_cursor_label(self.text.index(INSERT))
 
     def read_file(self, filename):
         with open(filename, "rU") as f:
@@ -214,13 +209,6 @@ class YeddaFrame(Frame):
 
     def set_name_label(self, new_file):
         self.lbl.config(text=new_file)
-
-    def set_cursor_label(self, cursor_index):
-        if self.debug:
-            print("Action Track: setCursorLabel")
-        row_column = cursor_index.split('.')
-        cursor_text = ("row: %s\ncol: %s" % (row_column[0], row_column[-1]))
-        self.cursor_index.config(text=cursor_text)
 
     def text_return_enter(self, event):
         if event.keysym == 'Escape':
@@ -396,7 +384,6 @@ class YeddaFrame(Frame):
             self.set_name_label("File: " + file_name)
             self.text.mark_set(INSERT, new_cursor_index)
             self.text.see(new_cursor_index)
-            self.set_cursor_label(new_cursor_index)
             self.apply_tag_colors()
 
     def apply_tag_colors(self):
