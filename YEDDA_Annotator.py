@@ -65,7 +65,7 @@ class YeddaFrame(Frame):
                          't': Tag("Tag20", colors[19].hex)
                          }
         self.all_key = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        self.controlCommand = {'q': "unTag", 'ctrl+z': 'undo'}
+        self.controlCommand = {'esc': "unTag", 'ctrl+z': 'undo'}
         self.label_entry_list = []
         self.shortcut_label_list = []
         self.label_patch_list = []
@@ -143,6 +143,7 @@ class YeddaFrame(Frame):
                 alt_plus_key = "<Command-Key-" + press_key + ">"
                 self.text.bind(alt_plus_key, self.keep_current)
 
+        self.text.bind('<Escape>', self.text_return_enter)
         self.text.bind('<Control-Key-z>', self.go_back_in_history)
         # disable the default  copy behaviour when right click.
         # For MacOS, right click is button 2, other systems are button3
@@ -222,7 +223,10 @@ class YeddaFrame(Frame):
         self.cursor_index.config(text=cursor_text)
 
     def text_return_enter(self, event):
-        press_key = event.char
+        if event.keysym == 'Escape':
+            press_key = 'esc'
+        else:
+            press_key = event.char
         if self.debug:
             print("Action Track: text_return_enter")
         self.push_to_history()
@@ -282,8 +286,8 @@ class YeddaFrame(Frame):
                     int(cursor_index.split('.')[1]) - (len(tag_name) * 2 + 5))
             after_entity_content = follow_half_content[len(selected_string):]
 
-            if command == "q":
-                print('q: remove entity label')
+            if command == "esc":
+                print('esc: remove entity label')
             else:
                 if len(selected_string) > 0:
                     selected_string, cursor_index = self.add_tag_around_string(selected_string, command, cursor_index)
@@ -312,12 +316,8 @@ class YeddaFrame(Frame):
                 selected_string = new_string
                 entity_content = selected_string
                 cursor_index = line_id + '.' + str(int(matched_span[1]) - (len(old_entity_type) * 2 + 5))
-                if command == "q":
-                    print('q: remove entity label')
-                elif command == 'y':
-                    print("y: comfirm recommend label")
-                    old_key = list(self.tag_dict.keys())[list(self.tag_dict.values()).index(old_entity_type)]
-                    entity_content, cursor_index = self.add_tag_around_string(selected_string, old_key, cursor_index)
+                if command == "esc":
+                    print('esc: remove entity label')
                 else:
                     if len(selected_string) > 0:
                         if command in self.tag_dict:
