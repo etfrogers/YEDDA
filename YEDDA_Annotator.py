@@ -24,7 +24,7 @@ Color = namedtuple('Color', ['name', 'hex', 'rgb', 'cmyk'])
 
 # TODO coloring bug on large files
 # TODO check file encoding bug
-# TODO Collapse tag ID lines
+# TODO "Add tag" button
 # TODO Version dialog
 
 
@@ -54,7 +54,15 @@ class YeddaFrame(Frame):
                          'i': Tag("Tag9", colors[8].hex),
                          'j': Tag("Tag10", colors[9].hex),
                          'k': Tag("Tag11", colors[10].hex),
-                         'l': Tag("Tag12", colors[11].hex)
+                         'l': Tag("Tag12", colors[11].hex),
+                         'm': Tag("Tag13", colors[12].hex),
+                         'n': Tag("Tag14", colors[13].hex),
+                         'o': Tag("Tag15", colors[14].hex),
+                         'p': Tag("Tag16", colors[15].hex),
+                         'q': Tag("Tag17", colors[16].hex),
+                         'r': Tag("Tag18", colors[17].hex),
+                         's': Tag("Tag19", colors[18].hex),
+                         't': Tag("Tag20", colors[19].hex)
                          }
         self.all_key = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
         self.controlCommand = {'q': "unTag", 'ctrl+z': 'undo'}
@@ -65,7 +73,7 @@ class YeddaFrame(Frame):
         if len(self.tag_dict) > 20:
             self.text_row = len(self.tag_dict)
         else:
-            self.text_row = 12
+            self.text_row = 20
         self.text_column = 5
         self.keep_recommend = True
 
@@ -89,7 +97,7 @@ class YeddaFrame(Frame):
         # self.columnconfigure(0, weight=2)
         self.columnconfigure(self.text_column + 2, weight=1)
         self.columnconfigure(self.text_column + 4, weight=1)
-        for idx in range(0, 16):
+        for idx in range(0, 20):
             self.rowconfigure(idx, weight=1)
 
         self.lbl = Label(self, text="File: no file is opened")
@@ -109,17 +117,17 @@ class YeddaFrame(Frame):
         open_btn.grid(row=1, column=self.text_column + 1)
 
         remap_button = Button(self, text="ReMap", command=self.do_remap_of_shortcuts)
-        remap_button.grid(row=4, column=self.text_column + 1, pady=4)
+        remap_button.grid(row=4, column=self.text_column + 1, pady=0)
 
         quit_button = Button(self, text="Quit", command=self.quit)
-        quit_button.grid(row=6, column=self.text_column + 1, pady=4)
+        quit_button.grid(row=6, column=self.text_column + 1, pady=0)
 
-        cursor_name = Label(self, text="Cursor: ", foreground="black",
-                            font=(self.text_font_style, 14, self.font_weight))
-        cursor_name.grid(row=9, column=self.text_column + 1, pady=4)
-        self.cursor_index = Label(self, text=("row: %s\ncol: %s" % (0, 0)), foreground="red",
-                                  font=(self.text_font_style, 14, self.font_weight))
-        self.cursor_index.grid(row=10, column=self.text_column + 1, pady=4)
+        # cursor_name = Label(self, text="Cursor: ", foreground="black",
+        #                     font=(self.text_font_style, 14, self.font_weight))
+        # cursor_name.grid(row=9, column=self.text_column + 1, pady=4)
+        # self.cursor_index = Label(self, text=("row: %s\ncol: %s" % (0, 0)), foreground="red",
+        #                           font=(self.text_font_style, 14, self.font_weight))
+        # self.cursor_index.grid(row=10, column=self.text_column + 1, pady=4)
 
         # for press_key in self.tag_dict.keys():
         for idx in range(0, len(self.all_key)):
@@ -541,16 +549,17 @@ class YeddaFrame(Frame):
     # show shortcut map
     def show_shortcut_map(self):
         label_color = "black"
-        label_font_size = 14
+        label_font_size = 11
         self.read_config()
 
         map_label = Label(self, text="Tags", foreground=label_color,
-                         font=(self.text_font_style, label_font_size, self.font_weight))
+                          font=(self.text_font_style, label_font_size, self.font_weight))
         map_label.grid(row=0, column=self.text_column + 2, columnspan=2, rowspan=1, padx=10)
         self.label_entry_list = []
         self.shortcut_label_list = []
         self.label_patch_list = []
-        patch_size = 25
+        patch_height = 14
+        patch_width = 25
         for i, key in enumerate(sorted(self.tag_dict)):
             row = i + 1
             # print "key: ", key, "  command: ", self.tag_dict[key]
@@ -565,8 +574,8 @@ class YeddaFrame(Frame):
             label_entry.grid(row=row, column=self.text_column + 3, columnspan=1, rowspan=1)
             self.label_entry_list.append(label_entry)
 
-            label_patch = Canvas(self, width=patch_size, height=patch_size)
-            label_patch.create_rectangle(0, 0, patch_size, patch_size, fill=self.tag_dict[key].color,
+            label_patch = Canvas(self, width=patch_width, height=patch_height)
+            label_patch.create_rectangle(0, 0, patch_width, patch_height, fill=self.tag_dict[key].color,
                                          outline=self.tag_dict[key].color)
             label_patch.grid(row=row, column=self.text_column + 4, columnspan=1, rowspan=1)
             self.label_patch_list.append(label_patch)
